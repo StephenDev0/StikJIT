@@ -10,7 +10,9 @@
 #include <CoreFoundation/CoreFoundation.h>
 #include <limits.h>
 
-void startHeartbeat() {
+typedef void (^HeartbeatCompletionHandler)(int result, const char *message);
+
+void startHeartbeat(HeartbeatCompletionHandler completion) {
     printf("DEBUG: Initializing logger...\n");
     idevice_init_logger(Debug, Disabled, NULL);
     
@@ -43,6 +45,7 @@ void startHeartbeat() {
     IdeviceErrorCode err = idevice_pairing_file_read(pairingFilePath, &pairing_file);
     if (err != IdeviceSuccess) {
         fprintf(stderr, "DEBUG: Failed to read pairing file: %d\n", err);
+        completion(err, "Failed to read pairing file");
         return;
     }
     printf("DEBUG: Pairing file read successfully.\n");
@@ -54,6 +57,7 @@ void startHeartbeat() {
     if (err != IdeviceSuccess) {
         fprintf(stderr, "DEBUG: Failed to create TCP provider: %d\n", err);
         idevice_pairing_file_free(pairing_file);
+        completion(err, "Failed to create TCP provider");
         return;
     }
     printf("DEBUG: TCP provider created successfully.\n");
@@ -62,11 +66,14 @@ void startHeartbeat() {
     HeartbeatClientHandle *client = NULL;
     err = heartbeat_connect_tcp(provider, &client);
     if (err != IdeviceSuccess) {
+        completion(err, "Failed to connect to Heartbeat");
         fprintf(stderr, "DEBUG: Failed to connect to installation proxy: %d\n", err);
         return;
     }
     tcp_provider_free(provider);
     printf("DEBUG: Connected to installation proxy successfully.\n");
+    
+    completion(0, "Heartbeat Completed");
     
     u_int64_t current_interval = 15;
     while (1) {

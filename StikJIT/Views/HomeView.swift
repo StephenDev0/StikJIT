@@ -6,6 +6,13 @@
 //
 
 import SwiftUI
+import UniformTypeIdentifiers
+
+extension UIDocumentPickerViewController {
+    @objc func fix_init(forOpeningContentTypes contentTypes: [UTType], asCopy: Bool) -> UIDocumentPickerViewController {
+        return fix_init(forOpeningContentTypes: contentTypes, asCopy: true)
+    }
+}
 
 struct HomeView: View {
     @AppStorage("username") private var username = "User"
@@ -61,7 +68,7 @@ struct HomeView: View {
         .onReceive(timer) { _ in
             refreshBackground()
         }
-        .fileImporter(isPresented: $isShowingPairingFilePicker, allowedContentTypes: [.item]) {result in 
+        .fileImporter(isPresented: $isShowingPairingFilePicker, allowedContentTypes: [UTType(filenameExtension: "mobiledevicepairing", conformingTo: .data)!, .propertyList]) {result in
             switch result {
             
             case .success(let url):
@@ -147,17 +154,17 @@ class InstalledAppsViewModel: ObservableObject {
             return
         }
         
-        if output.hasPrefix("{\"error\":") {
-            self.apps = [:]
-        }
-        
         print(output)
 
         // Decode the JSON into a Swift dictionary
         do {
             let decoder = JSONDecoder()
             let apps = try decoder.decode([String: String].self, from: jsonData)
-            self.apps = apps
+            if let app = apps.first, app.key == "error" {
+                self.apps = [:]
+            } else {
+                self.apps = apps
+            }
             return
         } catch {
             print("Error: Failed to decode JSON - \(error)")

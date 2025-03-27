@@ -7,24 +7,77 @@
 
 import SwiftUI
 import em_proxy
+import UniformTypeIdentifiers
 
 @main
 struct HeartbeatApp: App {
     @State private var isLoading = true
+    @State private var isPairing = false
+    @State private var heartBeat = false
+    @State private var error: Int32? = nil
+    
+    init() {
+        let fixMethod = class_getInstanceMethod(UIDocumentPickerViewController.self, #selector(UIDocumentPickerViewController.fix_init(forOpeningContentTypes:asCopy:)))!
+        let origMethod = class_getInstanceMethod(UIDocumentPickerViewController.self, #selector(UIDocumentPickerViewController.init(forOpeningContentTypes:asCopy:)))!
+        method_exchangeImplementations(origMethod, fixMethod)
+    }
 
     var body: some Scene {
         WindowGroup {
             if isLoading {
                 LoadingView()
                     .onAppear {
-                        DispatchQueue.main.asyncAfter(deadline: .now() + 5) {
-                            withAnimation(.easeInOut(duration: 1.0)) {
-                                isLoading = false
-                            }
-                        }
                         startProxy()
                         if FileManager.default.fileExists(atPath: URL.documentsDirectory.appendingPathComponent("pairingFile.plist").path) {
+                            Timer.scheduledTimer(withTimeInterval: 0.5, repeats: true) { timer in
+                                if heartBeat {
+                                    isLoading = false
+                                    timer.invalidate()
+                                } else {
+                                    if let error {
+                                        if error == InvalidHostID.rawValue {
+                                            isPairing = true
+                                        } else {
+                                            startHeartbeatInBackground()
+                                        }
+                                        self.error = nil
+                                    }
+                                }
+                            }
+                            
                             startHeartbeatInBackground()
+                        } else {
+                            isLoading = false
+                        }
+                    }
+                    .fileImporter(isPresented: $isPairing, allowedContentTypes: [UTType(filenameExtension: "mobiledevicepairing", conformingTo: .data)!, .propertyList]) {result in
+                        switch result {
+                            
+                        case .success(let url):
+                            let fileManager = FileManager.default
+                            let accessing = url.startAccessingSecurityScopedResource()
+                            
+                            if fileManager.fileExists(atPath: url.path) {
+                                do {
+                                    if fileManager.fileExists(atPath: URL.documentsDirectory.appendingPathComponent("pairingFile.plist").path) {
+                                        try fileManager.removeItem(at: URL.documentsDirectory.appendingPathComponent("pairingFile.plist"))
+                                    }
+                                    
+                                    try fileManager.copyItem(at: url, to: URL.documentsDirectory.appendingPathComponent("pairingFile.plist"))
+                                    print("File copied successfully!")
+                                    startHeartbeatInBackground()
+                                } catch {
+                                    print("Error copying file: \(error)")
+                                }
+                            } else {
+                                print("Source file does not exist.")
+                            }
+                            
+                            if accessing {
+                                url.stopAccessingSecurityScopedResource()
+                            }
+                        case .failure(_):
+                            print("Failed")
                         }
                     }
             } else {
@@ -50,16 +103,57 @@ struct HeartbeatApp: App {
             }
         }
     }
+    
+    func startHeartbeatInBackground() {
+        let heartBeat = Thread {
+            let cCompletionHandler: @convention(block) (Int32, UnsafePointer<CChar>?) -> Void = { result, messagePointer in
+                let message: String? = messagePointer != nil ? String(cString: messagePointer!) : nil
+
+                if result == 0 {
+                    print("Heartbeat started successfully: \(message ?? "")")
+                    
+                    self.heartBeat = true
+                } else {
+                    print("Error: \(result == InvalidHostID.rawValue ? "Invalid host ID, Please Selecr New Pairing File" : message ?? "") (Code: \(result))")
+                    
+                    showAlert(title: "HeartBeat Error", message: "\(message ?? "") (\(result))", showOk: true) { _ in
+                        self.error = result
+                    }
+                }
+            }
+            
+            startHeartbeat(cCompletionHandler)
+        }
+        
+        heartBeat.qualityOfService = .background
+        heartBeat.name = "HeartBeat"
+        heartBeat.start()
+    }
+
 }
 
 
 func startHeartbeatInBackground() {
     let heartBeat = Thread {
-        startHeartbeat()
+        let cCompletionHandler: @convention(block) (Int32, UnsafePointer<CChar>?) -> Void = { result, messagePointer in
+            let message: String? = messagePointer != nil ? String(cString: messagePointer!) : nil
+
+            if result == 0 {
+                print("Heartbeat started successfully: \(message ?? "")")
+            } else {
+                print("Error: \(message ?? "") (Code: \(result))")
+                
+                showAlert(title: "HeartBeat Error", message: "\(message ?? "") (\(result))", showOk: true) { _ in
+                    startHeartbeatInBackground()
+                }
+            }
+        }
+        
+        startHeartbeat(cCompletionHandler)
     }
     
     heartBeat.qualityOfService = .background
-    heartBeat.name = "HeartBeat"
+    heartBeat.name = "Heartbeat"
     heartBeat.start()
 }
 
@@ -103,6 +197,26 @@ struct LoadingView: View {
                     .opacity(animate ? 1.0 : 0.5)
                     .animation(Animation.easeInOut(duration: 1.5).repeatForever(autoreverses: true), value: animate)
             }
+        }
+    }
+}
+
+public func showAlert(title: String, message: String, showOk: Bool, completion: @escaping (Bool) -> Void) {
+    DispatchQueue.main.async {
+        if let mainWindow = UIApplication.shared.windows.last {
+            let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
+            
+             if showOk {
+                let okAction = UIAlertAction(title: "OK", style: .default) { _ in
+                    completion(true)
+                }
+
+                alert.addAction(okAction)
+            } else {
+                completion(false)
+            }
+            
+            mainWindow.rootViewController?.present(alert, animated: true, completion: nil)
         }
     }
 }
