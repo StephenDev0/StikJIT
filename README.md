@@ -2,7 +2,8 @@
 
 A **work-in-progress** on-device JIT enabler.
 
-# In order to use StikJIT enable the SideStore VPN
+In order to use StikJIT enable the SkitJIT or SideStore wireguard config
+
 
 Powered by [idevice](https://github.com/jkcoxson/idevice) and [Emotional Mangling Proxy](https://github.com/SideStore/em_proxy).
 
