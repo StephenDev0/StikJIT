@@ -95,7 +95,7 @@ int mount_lower_than_17(char* imagepath,char* signature_path){
     return ispassed;
 }
 
-int mount_personalized(char* imagetype,char* trustcache_path, char* manifest_path){
+int mount_personalized(char* imagetype,char* image_path,char* trustcache_path, char* manifest_path){
     int ispassed = 0;
     printf("==Mounting Developer Disk image (Personalized)==\n");
     char *ip = "10.7.0.2";
@@ -148,13 +148,21 @@ int mount_personalized(char* imagetype,char* trustcache_path, char* manifest_pat
       return 1;
     }
     tcp_provider_free(provider);
-
+    
     uint8_t *trustcache_data = NULL;
     size_t trustcache_len = 0;
     uint8_t *manifest_data = NULL;
     size_t manifest_len = 0;
+    uint8_t *image_data = NULL;
+    size_t image_len = 0;
+
+    if (!read_file(image_path,&image_data,&image_len)){
+        printf("ERROR: Failed to read mounted image\n");
+        
+    }
 
     if (!read_file(trustcache_path,&trustcache_data,&trustcache_len)){
+        free(image_data);
 
         ispassed = 1;
         printf("ERROR: Failed to read trustcache of mounted image\n");
@@ -162,16 +170,19 @@ int mount_personalized(char* imagetype,char* trustcache_path, char* manifest_pat
     }
     if (!read_file(manifest_path,&manifest_data,&manifest_len)){
         free(trustcache_data);
+        free(image_data);
 
         ispassed = 1;
         printf("ERROR: Failed to read manifest of mounted image\n");
         
     }
+    image_mounter_upload_image(client,imagetype,image_data,image_len,manifest_data,manifest_len);
     image_mounter_mount_image(client,imagetype,manifest_data,manifest_len,trustcache_data,trustcache_len,NULL);
     printf("==Successfully mounted developer disk image==\n");
     if (ispassed == 0){
         free(trustcache_data);
         free(manifest_data);
+        free(image_data);
     }
     return ispassed;
 }
