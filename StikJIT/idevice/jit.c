@@ -19,9 +19,7 @@
 #include "helper.h"
 
 
-int mount_lower_than_17(char* imagepath,char* signature_path){
-    int ispassed = 0;
-    printf("==Mounting Developer Disk image (17>) ==\n");
+ImageMounterHandle* getIMH(void){
     char *ip = "10.7.0.2";
     // Create the socket address
     struct sockaddr_in addr;
@@ -30,7 +28,7 @@ int mount_lower_than_17(char* imagepath,char* signature_path){
     addr.sin_port = htons(LOCKDOWN_PORT);
     if (inet_pton(AF_INET, ip, &addr.sin_addr) != 1) {
       fprintf(stderr, "Invalid IP address\n");
-      return 1;
+      return NULL;
     }
     char pairingFilePath[1024];
     CFURLRef url = CFCopyHomeDirectoryURL();
@@ -50,7 +48,7 @@ int mount_lower_than_17(char* imagepath,char* signature_path){
         idevice_pairing_file_read(pairingFilePath, &pairing_file);
     if (err != IdeviceSuccess) {
       fprintf(stderr, "Failed to read pairing file: %d\n", err);
-      return 1;
+      return NULL;
     }
 
     // Create TCP provider
@@ -60,7 +58,7 @@ int mount_lower_than_17(char* imagepath,char* signature_path){
     if (err != IdeviceSuccess) {
       fprintf(stderr, "Failed to create TCP provider: %d\n", err);
       idevice_pairing_file_free(pairing_file);
-      return 1;
+      return NULL;
     }
 
     // Connect to image mounter
@@ -69,9 +67,19 @@ int mount_lower_than_17(char* imagepath,char* signature_path){
     if (err != IdeviceSuccess) {
       fprintf(stderr, "Failed to connect to image mounter: %d\n", err);
       tcp_provider_free(provider);
-      return 1;
+      return NULL;
     }
     tcp_provider_free(provider);
+    return client;
+}
+
+int mount_lower_than_17(char* imagepath,char* signature_path){
+    int ispassed = 0;
+    printf("==Mounting Developer Disk image (17>) ==\n");
+    ImageMounterHandle* client = getIMH();
+    if (!client){
+        return 1;
+    }
     uint8_t *image_data = NULL;
     size_t image_len = 0;
     uint8_t *signature_data = NULL;
@@ -99,57 +107,11 @@ int mount_personalized(char* image_path,char* trustcache_path, char* manifest_pa
     char* imagetype = "Personalized";
     int ispassed = 0;
     printf("==Mounting Developer Disk image (Personalized)==\n");
-    char *ip = "10.7.0.2";
-    // Create the socket address
-    struct sockaddr_in addr;
-    memset(&addr, 0, sizeof(addr));
-    addr.sin_family = AF_INET;
-    addr.sin_port = htons(LOCKDOWN_PORT);
-    if (inet_pton(AF_INET, ip, &addr.sin_addr) != 1) {
-      fprintf(stderr, "Invalid IP address\n");
-      return 1;
-    }
-    char pairingFilePath[1024];
-    CFURLRef url = CFCopyHomeDirectoryURL();
-    if (url) {
-        CFStringRef path = CFURLCopyFileSystemPath(url, kCFURLPOSIXPathStyle);
-        if (path) {
-            CFStringGetCString(path, pairingFilePath, sizeof(pairingFilePath), kCFStringEncodingUTF8);
-            strncat(pairingFilePath, "/Documents/pairingFile.plist", sizeof(pairingFilePath) - strlen(pairingFilePath) - 1);
-            CFRelease(path);
-        }
-        CFRelease(url);
-    }
-    printf("Pairing file found at path: %s\n", pairingFilePath);
-    // Read pairing file
-    IdevicePairingFile *pairing_file = NULL;
-    IdeviceErrorCode err =
-        idevice_pairing_file_read(pairingFilePath, &pairing_file);
-    if (err != IdeviceSuccess) {
-      fprintf(stderr, "Failed to read pairing file: %d\n", err);
-      return 1;
-    }
 
-    // Create TCP provider
-    TcpProviderHandle *provider = NULL;
-    err = idevice_tcp_provider_new((struct sockaddr *)&addr, pairing_file,
-                                   "ImageMounterTest", &provider);
-    if (err != IdeviceSuccess) {
-      fprintf(stderr, "Failed to create TCP provider: %d\n", err);
-      idevice_pairing_file_free(pairing_file);
-      return 1;
+    ImageMounterHandle* client = getIMH();
+    if (!client){
+        return 1;
     }
-
-    // Connect to image mounter
-    ImageMounterHandle *client = NULL;
-    err = image_mounter_connect_tcp(provider, &client);
-    if (err != IdeviceSuccess) {
-      fprintf(stderr, "Failed to connect to image mounter: %d\n", err);
-      tcp_provider_free(provider);
-      return 1;
-    }
-    tcp_provider_free(provider);
-    
     uint8_t *trustcache_data = NULL;
     size_t trustcache_len = 0;
     uint8_t *manifest_data = NULL;
@@ -177,6 +139,7 @@ int mount_personalized(char* image_path,char* trustcache_path, char* manifest_pa
         printf("ERROR: Failed to read manifest of mounted image\n");
         
     }
+
     image_mounter_upload_image(client,imagetype,image_data,image_len,manifest_data,manifest_len);
     image_mounter_mount_image(client,imagetype,manifest_data,manifest_len,trustcache_data,trustcache_len,NULL);
     printf("==Successfully mounted developer disk image==\n");
@@ -186,6 +149,26 @@ int mount_personalized(char* image_path,char* trustcache_path, char* manifest_pa
         free(image_data);
     }
     return ispassed;
+}
+
+int unmount_lower_than_17(void){
+    printf("==Unmounting Developer Disk image (17>) ==\n");
+    ImageMounterHandle* client = getIMH();
+    if (!client){
+        return 1;
+    }
+    image_mounter_unmount_image(client,"/Developer");
+    return 0;
+}
+
+int unmount_personalized(void){
+    printf("==Unmounting Developer Disk image (Personalized) ==\n");
+    ImageMounterHandle* client = getIMH();
+    if (!client){
+        return 1;
+    }
+    image_mounter_unmount_image(client,"/System/Developer");
+    return 0;
 }
 
 int debug_app(const char *bundle_id) {

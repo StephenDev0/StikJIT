@@ -11,6 +11,8 @@
 
 int mount_lower_than_17(char* imagepath,char* signature_path);
 int mount_personalized(char* imagetype,char* trustcache_path, char* manifest_path);
+int unmount_lower_than_17(void);
+int unmount_personalized(void);
 int debug_app(const char *bundle_id);
 
 #endif /* JIT_H */
