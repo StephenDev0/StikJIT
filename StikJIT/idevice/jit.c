@@ -95,7 +95,8 @@ int mount_lower_than_17(char* imagepath,char* signature_path){
     return ispassed;
 }
 
-int mount_personalized(char* imagetype,char* image_path,char* trustcache_path, char* manifest_path){
+int mount_personalized(char* image_path,char* trustcache_path, char* manifest_path){
+    char* imagetype = "Personalized";
     int ispassed = 0;
     printf("==Mounting Developer Disk image (Personalized)==\n");
     char *ip = "10.7.0.2";
