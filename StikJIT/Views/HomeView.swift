@@ -26,6 +26,11 @@ struct HomeView: View {
     @State private var pairingFileExists: Bool = false
     @State private var showPairingFileMessage = false
     @State private var pairingFileIsValid = false
+    @State private var isImportingFile = false
+    @State private var importProgress: Float = 0.0
+    
+    @State private var viewDidAppeared = false
+    @State private var pendingBundleIdToEnableJIT : String? = nil
 
     var body: some View {
         ZStack {
@@ -73,6 +78,37 @@ struct HomeView: View {
                 
                 // Status message area - keeps layout consistent
                 ZStack {
+                    // Progress bar for importing file
+                    if isImportingFile {
+                        VStack(spacing: 8) {
+                            HStack {
+                                Text("Processing pairing file...")
+                                    .font(.system(.caption, design: .rounded))
+                                    .foregroundColor(.secondaryText)
+                                Spacer()
+                                Text("\(Int(importProgress * 100))%")
+                                    .font(.system(.caption, design: .rounded))
+                                    .foregroundColor(.secondaryText)
+                            }
+                            
+                            GeometryReader { geometry in
+                                ZStack(alignment: .leading) {
+                                    RoundedRectangle(cornerRadius: 4)
+                                        .fill(Color.black.opacity(0.2))
+                                        .frame(height: 8)
+                                    
+                                    RoundedRectangle(cornerRadius: 4)
+                                        .fill(Color.green)
+                                        .frame(width: geometry.size.width * CGFloat(importProgress), height: 8)
+                                        .animation(.linear(duration: 0.3), value: importProgress)
+                                }
+                            }
+                            .frame(height: 8)
+                        }
+                        .padding(.horizontal, 40)
+                    }
+                    
+                    // Success message
                     if showPairingFileMessage && pairingFileIsValid {
                         Text("✓ Pairing file successfully imported")
                             .font(.system(.callout, design: .rounded))
@@ -87,7 +123,7 @@ struct HomeView: View {
                     // Invisible text to reserve space - no layout jumps
                     Text(" ").opacity(0)
                 }
-                .frame(height: 30)
+                .frame(height: isImportingFile ? 60 : 30)  // Adjust height based on what's showing
                 
                 Spacer()
             }
@@ -116,30 +152,44 @@ struct HomeView: View {
                         try fileManager.copyItem(at: url, to: URL.documentsDirectory.appendingPathComponent("pairingFile.plist"))
                         print("File copied successfully!")
                         
-                        // Show success message first
+                        // Show progress bar and initialize progress
                         DispatchQueue.main.async {
-                            // Set pairing file exists and show success message
+                            isImportingFile = true
+                            importProgress = 0.0
                             pairingFileExists = true
-                            pairingFileIsValid = true
-                            
-                            // Show success message with animation
-                            withAnimation {
-                                showPairingFileMessage = true
-                            }
-                            
-                            // Schedule hiding of message
-                            DispatchQueue.main.asyncAfter(deadline: .now() + 3) {
-                                withAnimation {
-                                    showPairingFileMessage = false
+                        }
+                        
+                        // Start heartbeat in background
+                        startHeartbeatInBackground()
+                        
+                        // Create timer to update progress instead of sleeping
+                        let progressTimer = Timer.scheduledTimer(withTimeInterval: 0.05, repeats: true) { timer in
+                            DispatchQueue.main.async {
+                                if importProgress < 1.0 {
+                                    importProgress += 0.25
+                                } else {
+                                    timer.invalidate()
+                                    isImportingFile = false
+                                    pairingFileIsValid = true
+                                    
+                                    // Show success message
+                                    withAnimation {
+                                        showPairingFileMessage = true
+                                    }
+                                    
+                                    // Hide message after delay
+                                    DispatchQueue.main.asyncAfter(deadline: .now() + 3) {
+                                        withAnimation {
+                                            showPairingFileMessage = false
+                                        }
+                                    }
                                 }
                             }
                         }
                         
-                        // Start heartbeat and then sleep
-                        startHeartbeatInBackground()
+                        // Ensure timer keeps running
+                        RunLoop.current.add(progressTimer, forMode: .common)
                         
-                        // Moving this after the UI updates
-                        Thread.sleep(forTimeInterval: 5)
                     } catch {
                         print("Error copying file: \(error)")
                     }
@@ -162,7 +212,32 @@ struct HomeView: View {
                 startJITInBackground(with: selectedBundle)
             }
         }
+        .onOpenURL { url in
+            print(url.path())
+            if url.host() != "enable-jit" {
+                return
+            }
+            
+            let components = URLComponents(url: url, resolvingAgainstBaseURL: false)
+            if let bundleId = components?.queryItems?.first(where: { $0.name == "bundle-id" })?.value {
+                if viewDidAppeared {
+                    startJITInBackground(with: bundleId)
+                } else {
+                    pendingBundleIdToEnableJIT = bundleId
+                }
+            }
+            
+        }
+        .onAppear() {
+            viewDidAppeared = true
+            if let pendingBundleIdToEnableJIT {
+                startJITInBackground(with: pendingBundleIdToEnableJIT)
+                self.pendingBundleIdToEnableJIT = nil
+            }
+        }
     }
+    
+
     
     private func checkPairingFileExists() {
         pairingFileExists = FileManager.default.fileExists(atPath: URL.documentsDirectory.appendingPathComponent("pairingFile.plist").path)
@@ -175,14 +250,9 @@ struct HomeView: View {
     private func startJITInBackground(with bundleID: String) {
         isProcessing = true
         DispatchQueue.global(qos: .background).async {
-            guard let cBundleID = strdup(bundleID) else {
-                DispatchQueue.main.async { isProcessing = false }
-                return
-            }
             
-            _ = debug_app(cBundleID)
+            JITEnableContext.shared().debugApp(withBundleID: bundleID, logger: nil)
             
-            free(cBundleID)
             DispatchQueue.main.async {
                 isProcessing = false
             }
@@ -198,38 +268,13 @@ class InstalledAppsViewModel: ObservableObject {
     }
     
     func loadApps() {
-        guard let rawPointer = list_installed_apps() else {
-            self.apps = [:]
-            return
-        }
-        
-        let output = String(cString: rawPointer)
-        free(rawPointer)
-
-        guard let jsonData = output.data(using: .utf8) else {
-            print("Error: Failed to convert string to data")
-            self.apps = [:]
-            return
-        }
-        
-        print(output)
-
-        // Decode the JSON into a Swift dictionary
         do {
-            let decoder = JSONDecoder()
-            let apps = try decoder.decode([String: String].self, from: jsonData)
-            if let app = apps.first, app.key == "error" {
-                self.apps = [:]
-            } else {
-                self.apps = apps
-            }
-            return
+            self.apps = try JITEnableContext.shared().getAppList()
         } catch {
-            print("Error: Failed to decode JSON - \(error)")
+            print(error)
             self.apps = [:]
-            return
         }
-        
+
     }
 }
 

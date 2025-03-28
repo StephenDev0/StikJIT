@@ -7,7 +7,8 @@
 
 #ifndef APPLIST_H
 #define APPLIST_H
+@import Foundation;
 
-char *list_installed_apps(void);
+NSDictionary<NSString*, NSString*>* list_installed_apps(TcpProviderHandle* provider, NSString** error);
 
 #endif /* APPLIST_H */

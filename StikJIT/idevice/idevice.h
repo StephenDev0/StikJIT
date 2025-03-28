@@ -8,6 +8,9 @@
 #include <sys/socket.h>
 #include "plist.h"
 
+#ifndef IDEVICE_H
+#define IDEVICE_H
+
 #define LOCKDOWN_PORT 62078
 
 typedef enum IdeviceErrorCode {
@@ -1629,3 +1632,5 @@ enum IdeviceErrorCode idevice_usbmuxd_unix_addr_new(const char *addr,
  * or NULL (in which case this function does nothing)
  */
 void idevice_usbmuxd_addr_free(struct UsbmuxdAddrHandle *usbmuxd_addr);
+
+#endif /* IDEVICE_H */

@@ -16,6 +16,10 @@ struct SettingsView: View {
 
     @State private var selectedBackgroundColor: Color = Color.primaryBackground
     @State private var showIconPopover = false
+    @State private var showPairingFileMessage = false
+    @State private var pairingFileIsValid = false
+    @State private var isImportingFile = false
+    @State private var importProgress: Float = 0.0
 
     var body: some View {
         ZStack {
@@ -60,6 +64,58 @@ struct SettingsView: View {
                         Spacer()
                     }
                     .listRowBackground(Color.cardBackground)
+                    
+                    if isImportingFile {
+                        VStack(spacing: 8) {
+                            HStack {
+                                Text("Processing pairing file...")
+                                    .font(.system(.caption, design: .rounded))
+                                    .foregroundColor(.secondaryText)
+                                Spacer()
+                                Text("\(Int(importProgress * 100))%")
+                                    .font(.system(.caption, design: .rounded))
+                                    .foregroundColor(.secondaryText)
+                            }
+                            
+                            GeometryReader { geometry in
+                                ZStack(alignment: .leading) {
+                                    RoundedRectangle(cornerRadius: 4)
+                                        .fill(Color.cardBackground)
+                                        .frame(height: 8)
+                                    
+                                    RoundedRectangle(cornerRadius: 4)
+                                        .fill(Color.green)
+                                        .frame(width: geometry.size.width * CGFloat(importProgress), height: 8)
+                                        .animation(.linear(duration: 0.3), value: importProgress)
+                                }
+                            }
+                            .frame(height: 8)
+                        }
+                        .padding(.vertical, 8)
+                        .listRowBackground(Color.cardBackground)
+                    }
+                    
+                    if showPairingFileMessage && pairingFileIsValid {
+                        HStack {
+                            Spacer()
+                            Text("✓ Pairing file successfully imported")
+                                .font(.system(.callout, design: .rounded))
+                                .foregroundColor(.green)
+                                .padding(.vertical, 4)
+                                .padding(.horizontal, 12)
+                                .background(Color.green.opacity(0.1))
+                                .cornerRadius(8)
+                            Spacer()
+                        }
+                        .padding(.vertical, 4)
+                        .listRowBackground(Color.cardBackground)
+                        .transition(
+                            .asymmetric(
+                                insertion: .scale(scale: 0.9).combined(with: .opacity).animation(.spring(response: 0.4, dampingFraction: 0.7)),
+                                removal: .opacity.animation(.easeOut(duration: 0.25))
+                            )
+                        )
+                    }
                 }
 
                 Section(header: Text("About").font(.headline).foregroundColor(.primaryText)) {
@@ -99,6 +155,8 @@ struct SettingsView: View {
                         Text("Neo")
                             .foregroundColor(.primaryText)
                         Text("Se2crid")
+                            .foregroundColor(.primaryText)
+                        Text("HugeBlack")
                             .foregroundColor(.primaryText)
                     }
                     .listRowBackground(Color.cardBackground)
@@ -153,9 +211,37 @@ struct SettingsView: View {
                         
                         try fileManager.copyItem(at: url, to: URL.documentsDirectory.appendingPathComponent("pairingFile.plist"))
                         print("File copied successfully!")
+                        
+                        DispatchQueue.main.async {
+                            isImportingFile = true
+                            importProgress = 0.0
+                        }
+                        
+                        let progressTimer = Timer.scheduledTimer(withTimeInterval: 0.05, repeats: true) { timer in
+                            DispatchQueue.main.async {
+                                if importProgress < 1.0 {
+                                    importProgress += 0.25
+                                } else {
+                                    timer.invalidate()
+                                    isImportingFile = false
+                                    pairingFileIsValid = true
+                                    
+                                    withAnimation {
+                                        showPairingFileMessage = true
+                                    }
+                                    
+                                    DispatchQueue.main.asyncAfter(deadline: .now() + 3) {
+                                        withAnimation {
+                                            showPairingFileMessage = false
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                        
                         startHeartbeatInBackground()
                         
-                        Thread.sleep(forTimeInterval: 5)
+                        RunLoop.current.add(progressTimer, forMode: .common)
                     } catch {
                         print("Error copying file: \(error)")
                     }

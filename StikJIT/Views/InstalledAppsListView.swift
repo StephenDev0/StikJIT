@@ -18,7 +18,7 @@ struct InstalledAppsListView: View {
         NavigationView {
             ScrollView {
                 LazyVStack(spacing: 0) {
-                    ForEach(viewModel.apps.sorted(by: { $0.key < $1.key }), id: \.key) { appName, bundleID in
+                    ForEach(viewModel.apps.sorted(by: { $0.key < $1.key }), id: \.key) { bundleID, appName in
                         Button(action: {
                             withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
                                 onSelectApp(bundleID)

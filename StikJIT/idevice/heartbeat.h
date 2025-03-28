@@ -8,9 +8,11 @@
 // heartbeat.h
 #ifndef HEARTBEAT_H
 #define HEARTBEAT_H
+#include "idevice.h"
 
-typedef void (^HeartbeatCompletionHandler)(int result, const char *message);
+typedef void (^HeartbeatCompletionHandlerC)(int result, const char *message);
+typedef void (^LogFuncC)(const char* message, ...);
 
-void startHeartbeat(HeartbeatCompletionHandler completion);
+void startHeartbeat(IdevicePairingFile* pairintFile, TcpProviderHandle** provider, int* heartbeatSessionId, HeartbeatCompletionHandlerC completion, LogFuncC logger);
 
 #endif /* HEARTBEAT_H */

@@ -106,8 +106,7 @@ struct HeartbeatApp: App {
     
     func startHeartbeatInBackground() {
         let heartBeat = Thread {
-            let cCompletionHandler: @convention(block) (Int32, UnsafePointer<CChar>?) -> Void = { result, messagePointer in
-                let message: String? = messagePointer != nil ? String(cString: messagePointer!) : nil
+            let completionHandler: @convention(block) (Int32, String?) -> Void = { result, message in
 
                 if result == 0 {
                     print("Heartbeat started successfully: \(message ?? "")")
@@ -122,7 +121,7 @@ struct HeartbeatApp: App {
                 }
             }
             
-            startHeartbeat(cCompletionHandler)
+            JITEnableContext.shared().startHeartbeat(completionHandler: completionHandler, logger: nil)
         }
         
         heartBeat.qualityOfService = .background
@@ -135,8 +134,7 @@ struct HeartbeatApp: App {
 
 func startHeartbeatInBackground() {
     let heartBeat = Thread {
-        let cCompletionHandler: @convention(block) (Int32, UnsafePointer<CChar>?) -> Void = { result, messagePointer in
-            let message: String? = messagePointer != nil ? String(cString: messagePointer!) : nil
+        let completionHandler: @convention(block) (Int32, String?) -> Void = { result, message in
 
             if result == 0 {
                 print("Heartbeat started successfully: \(message ?? "")")
@@ -149,7 +147,7 @@ func startHeartbeatInBackground() {
             }
         }
         
-        startHeartbeat(cCompletionHandler)
+        JITEnableContext.shared().startHeartbeat(completionHandler: completionHandler, logger: nil)
     }
     
     heartBeat.qualityOfService = .background
