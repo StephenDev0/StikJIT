@@ -45,6 +45,20 @@ struct HeartbeatApp: App {
                                 }
                             }
                             
+                            // Add 15-second timeout timer
+                            Timer.scheduledTimer(withTimeInterval: 15.0, repeats: false) { _ in
+                                if isLoading {
+                                    // Still loading after 15 seconds - show error
+                                    showCustomError(
+                                        title: "HeartBeat Error", 
+                                        message: "Unable to establish connection.\nPlease check your WiFi and VPN connection.",
+                                        showButton: false
+                                    ) {
+                                        self.error = -1 // Using a generic error code
+                                    }
+                                }
+                            }
+                            
                             startHeartbeatInBackground()
                         } else {
                             isLoading = false
@@ -113,9 +127,13 @@ struct HeartbeatApp: App {
                     
                     self.heartBeat = true
                 } else {
-                    print("Error: \(result == InvalidHostID.rawValue ? "Invalid host ID, Please Selecr New Pairing File" : message ?? "") (Code: \(result))")
+                    print("Error: \(result == InvalidHostID.rawValue ? "Invalid host ID, Please Select New Pairing File" : message ?? "") (Code: \(result))")
                     
-                    showAlert(title: "HeartBeat Error", message: "\(message ?? "") (\(result))", showOk: true) { _ in
+                    showCustomError(
+                        title: "Connection Error", 
+                        message: "No WiFi or VPN!\nYou do not appear to be connected to WiFi and/or the WireGuard VPN!",
+                        showButton: false
+                    ) {
                         self.error = result
                     }
                 }
@@ -141,8 +159,12 @@ func startHeartbeatInBackground() {
             } else {
                 print("Error: \(message ?? "") (Code: \(result))")
                 
-                showAlert(title: "HeartBeat Error", message: "\(message ?? "") (\(result))", showOk: true) { _ in
-                    startHeartbeatInBackground()
+                showCustomError(
+                    title: "HeartBeat Error",
+                    message: "No WiFi or VPN!\nYou do not appear to be connected to WiFi and/or the WireGuard VPN!",
+                    showButton: false
+                ) {
+                    // No need to restart the heartbeat here anymore
                 }
             }
         }
@@ -199,22 +221,20 @@ struct LoadingView: View {
     }
 }
 
-public func showAlert(title: String, message: String, showOk: Bool, completion: @escaping (Bool) -> Void) {
-    DispatchQueue.main.async {
-        if let mainWindow = UIApplication.shared.windows.last {
-            let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
-            
-             if showOk {
-                let okAction = UIAlertAction(title: "OK", style: .default) { _ in
-                    completion(true)
-                }
-
-                alert.addAction(okAction)
-            } else {
-                completion(false)
-            }
-            
-            mainWindow.rootViewController?.present(alert, animated: true, completion: nil)
-        }
+public func showCustomError(title: String, message: String, showButton: Bool = true, completion: @escaping () -> Void = {}) {
+    if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
+       let rootViewController = windowScene.windows.first?.rootViewController {
+        
+        let hostingController = UIHostingController(
+            rootView: CustomErrorView(
+                title: title,
+                message: message,
+                onDismiss: completion,
+                showButton: showButton
+            )
+        )
+        hostingController.view.backgroundColor = .clear
+        hostingController.modalPresentationStyle = .overFullScreen
+        rootViewController.present(hostingController, animated: false)
     }
 }
