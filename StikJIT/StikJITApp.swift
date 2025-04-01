@@ -232,18 +232,25 @@ struct HeartbeatApp: App {
                                         alert_string = "[Download DDI Error]: " + result
                                         show_alert = true
                                     }
-                                    
                                 }
-
                             }
                         }
-                        
                     }
-                    .alert(alert_title, isPresented: $show_alert) {
-                        Button("OK", role: .cancel) { }
-                    } message: {
-                        Text(alert_title)
-                    }
+                    .overlay(
+                        ZStack {
+                            if show_alert {
+                                CustomErrorView(
+                                    title: alert_title,
+                                    message: alert_string,
+                                    onDismiss: {
+                                        show_alert = false
+                                    },
+                                    showButton: true,
+                                    primaryButtonText: "OK"
+                                )
+                            }
+                        }
+                    )
             }
         }
     }
@@ -430,16 +437,15 @@ func startHeartbeatInBackground() {
                 print("Error: \(message ?? "") (Code: \(result))")
                 
                 DispatchQueue.main.async {
-                    if let mainWindow = UIApplication.shared.windows.last {
-                        let alert = UIAlertController(title: "Heartbeat Error", message: "\(message ?? "") (\(result))", preferredStyle: .alert)
-                        
-                        let tryAgainAction = UIAlertAction(title: "Try Again", style: .default) { _ in
+                    showAlert(
+                        title: "Heartbeat Error",
+                        message: "Failed to connect to Heartbeat (\(result))",
+                        showOk: false,
+                        showTryAgain: true
+                    ) { shouldTryAgain in
+                        if shouldTryAgain {
                             startHeartbeatInBackground()
                         }
-
-                        alert.addAction(tryAgainAction)
-                        
-                        mainWindow.rootViewController?.present(alert, animated: true, completion: nil)
                     }
                 }
             }
@@ -499,34 +505,68 @@ struct LoadingView: View {
 
 public func showAlert(title: String, message: String, showOk: Bool, showTryAgain: Bool = false, completion: @escaping (Bool) -> Void) {
     DispatchQueue.main.async {
-        if let mainWindow = UIApplication.shared.windows.last {
-            let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
-            
-            if showOk, !showTryAgain {
-                let okAction = UIAlertAction(title: "OK", style: .default) { _ in
-                    completion(true)
-                }
-
-                alert.addAction(okAction)
-            } else if !showTryAgain {
-                completion(false)
-            }
-            
-            if showTryAgain {
-                let tryAgainAction = UIAlertAction(title: "Try Again", style: .default) { _ in
-                    completion(true)
-                }
-
-                alert.addAction(tryAgainAction)
-                
-                let okAction = UIAlertAction(title: "OK", style: .cancel) { _ in
+        let rootViewController = UIApplication.shared.windows.last?.rootViewController
+        
+        if showTryAgain {
+            // Configure with "Try Again" button only (no Cancel button)
+            let customErrorView = CustomErrorView(
+                title: title,
+                message: message,
+                onDismiss: {
+                    // Called when tapped outside
                     completion(false)
+                },
+                showButton: true,
+                primaryButtonText: "Try Again",
+                onPrimaryButtonTap: {
+                    // Try Again was tapped
+                    completion(true)
                 }
-
-                alert.addAction(okAction)
-            }
+            )
             
-            mainWindow.rootViewController?.present(alert, animated: true, completion: nil)
+            let hostingController = UIHostingController(rootView: customErrorView)
+            hostingController.modalPresentationStyle = .overFullScreen
+            hostingController.modalTransitionStyle = .crossDissolve
+            hostingController.view.backgroundColor = .clear
+            rootViewController?.present(hostingController, animated: true)
+        } else if showOk {
+            // Configure with just "OK" button
+            let customErrorView = CustomErrorView(
+                title: title,
+                message: message,
+                onDismiss: {
+                    // Called when tapped outside
+                    completion(true)
+                },
+                showButton: true,
+                primaryButtonText: "OK",
+                onPrimaryButtonTap: {
+                    // OK was tapped
+                    completion(true)
+                }
+            )
+            
+            let hostingController = UIHostingController(rootView: customErrorView)
+            hostingController.modalPresentationStyle = .overFullScreen
+            hostingController.modalTransitionStyle = .crossDissolve
+            hostingController.view.backgroundColor = .clear
+            rootViewController?.present(hostingController, animated: true)
+        } else {
+            // No buttons case
+            let customErrorView = CustomErrorView(
+                title: title,
+                message: message,
+                onDismiss: {
+                    completion(false)
+                },
+                showButton: false
+            )
+            
+            let hostingController = UIHostingController(rootView: customErrorView)
+            hostingController.modalPresentationStyle = .overFullScreen
+            hostingController.modalTransitionStyle = .crossDissolve
+            hostingController.view.backgroundColor = .clear
+            rootViewController?.present(hostingController, animated: true)
         }
     }
 }

@@ -14,9 +14,8 @@ struct ConsoleLogsView: View {
     @State private var autoScroll = true
     @State private var scrollView: ScrollViewProxy? = nil
     
-    // Alert handlin
-    @State private var showingExportAlert = false
-    @State private var showingCopyAlert = false
+    // Alert handling
+    @State private var showingCustomAlert = false
     @State private var alertMessage = ""
     @State private var alertTitle = ""
     @State private var isError = false
@@ -119,13 +118,13 @@ struct ConsoleLogsView: View {
                                     alertTitle = "Logs Exported"
                                     alertMessage = "Logs have been saved to Files app in StikJIT folder."
                                     isError = false
-                                    showingExportAlert = true
+                                    showingCustomAlert = true
                                 } catch {
                                     // Set error alert variables and show the alert
                                     alertTitle = "Export Failed"
                                     alertMessage = "Failed to save logs: \(error.localizedDescription)"
                                     isError = true
-                                    showingExportAlert = true
+                                    showingCustomAlert = true
                                 }
                             }) {
                                 HStack {
@@ -166,7 +165,7 @@ struct ConsoleLogsView: View {
                                 alertTitle = "Logs Copied"
                                 alertMessage = "Logs have been copied to clipboard."
                                 isError = false
-                                showingCopyAlert = true
+                                showingCustomAlert = true
                             }) {
                                 HStack {
                                     Text("Copy Logs")
@@ -220,16 +219,22 @@ struct ConsoleLogsView: View {
             }
         }
         .navigationViewStyle(StackNavigationViewStyle())
-        .alert(alertTitle, isPresented: $showingExportAlert) {
-            Button("OK", role: .cancel) { }
-        } message: {
-            Text(alertMessage)
-        }
-        .alert(alertTitle, isPresented: $showingCopyAlert) {
-            Button("OK", role: .cancel) { }
-        } message: {
-            Text(alertMessage)
-        }
+        .overlay(
+            ZStack {
+                if showingCustomAlert {
+                    CustomErrorView(
+                        title: alertTitle,
+                        message: alertMessage,
+                        onDismiss: {
+                            showingCustomAlert = false
+                        },
+                        showButton: true,
+                        primaryButtonText: "OK",
+                        messageType: isError ? .error : .success
+                    )
+                }
+            }
+        )
     }
     
     // Creates an NSAttributedString that combines timestamp, type, and message
