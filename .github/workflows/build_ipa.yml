@@ -7,7 +7,7 @@ on:
 
 jobs:
   build:
-    name: Build Unsigned IPA
+    name: Build StikDebug
     runs-on: macos-14
 
     steps:
@@ -28,15 +28,15 @@ jobs:
         run: xcodebuild -showsdks
 
       - name: List Available Schemes
-        run: xcodebuild -list -project StikJit.xcodeproj
+        run: xcodebuild -list -project StikDebug.xcodeproj
 
       - name: Archive Build (Unsigned)
         run: |
           xcodebuild clean archive \
-            -project StikJIT.xcodeproj \
-            -scheme "StikJIT" \
+            -project StikDebug.xcodeproj \
+            -scheme "StikDebug" \
             -configuration Release \
-            -archivePath build/StikJit.xcarchive \
+            -archivePath build/StikDebug.xcarchive \
             -sdk iphoneos \
             -destination 'generic/platform=iOS' \
             ONLY_ACTIVE_ARCH=NO \
@@ -49,17 +49,17 @@ jobs:
       - name: Create IPA from Archive
         run: |
           # Copy the .app from the archive
-          cp -R build/StikJit.xcarchive/Products/Applications/StikJit.app .
+          cp -R build/StikDebug.xcarchive/Products/Applications/StikDebug.app .
 
           # Package the app into an IPA
           mkdir -p Payload
-          cp -R StikJit.app Payload/
-          zip -r StikJit.ipa Payload
-          rm -rf Payload StikJit.app
+          cp -R StikDebug.app Payload/
+          zip -r StikDebug.ipa Payload
+          rm -rf Payload StikDebug.app
 
       - name: Upload IPA
         uses: actions/upload-artifact@v4
         with:
-          name: StikJit.ipa
-          path: StikJit.ipa
+          name: StikDebug.ipa
+          path: StikDebug.ipa
           retention-days: 90
