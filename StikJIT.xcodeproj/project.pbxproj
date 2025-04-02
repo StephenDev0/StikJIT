@@ -6,11 +6,6 @@
 	objectVersion = 77;
 	objects = {
 
-/* Begin PBXBuildFile section */
-		DC5716262D95648B0099302E /* em_proxy.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = DC5716242D9564760099302E /* em_proxy.xcframework */; };
-		DC5716272D95648B0099302E /* em_proxy.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = DC5716242D9564760099302E /* em_proxy.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
-/* End PBXBuildFile section */
-
 /* Begin PBXContainerItemProxy section */
 		DC6F1D492D94EADF0071B2B6 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -27,20 +22,6 @@
 			remoteInfo = StikJIT;
 		};
 /* End PBXContainerItemProxy section */
-
-/* Begin PBXCopyFilesBuildPhase section */
-		DC5716282D95648B0099302E /* Embed Frameworks */ = {
-			isa = PBXCopyFilesBuildPhase;
-			buildActionMask = 2147483647;
-			dstPath = "";
-			dstSubfolderSpec = 10;
-			files = (
-				DC5716272D95648B0099302E /* em_proxy.xcframework in Embed Frameworks */,
-			);
-			name = "Embed Frameworks";
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-/* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
 		DC5716242D9564760099302E /* em_proxy.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; path = em_proxy.xcframework; sourceTree = "<group>"; };
@@ -85,7 +66,6 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				DC5716262D95648B0099302E /* em_proxy.xcframework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -145,7 +125,6 @@
 				DC6F1D332D94EADD0071B2B6 /* Sources */,
 				DC6F1D342D94EADD0071B2B6 /* Frameworks */,
 				DC6F1D352D94EADD0071B2B6 /* Resources */,
-				DC5716282D95648B0099302E /* Embed Frameworks */,
 			);
 			buildRules = (
 			);
@@ -463,7 +442,7 @@
 				);
 				MACOSX_DEPLOYMENT_TARGET = 15.1;
 				MARKETING_VERSION = 1.1;
-				PRODUCT_BUNDLE_IDENTIFIER = com.stik.StikJIT;
+				PRODUCT_BUNDLE_IDENTIFIER = com.stik.sj;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = auto;
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator macosx xros xrsimulator";
@@ -511,7 +490,7 @@
 				);
 				MACOSX_DEPLOYMENT_TARGET = 15.1;
 				MARKETING_VERSION = 1.1;
-				PRODUCT_BUNDLE_IDENTIFIER = com.stik.StikJIT;
+				PRODUCT_BUNDLE_IDENTIFIER = com.stik.sj;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = auto;
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator macosx xros xrsimulator";

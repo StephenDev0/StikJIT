@@ -19,15 +19,19 @@ class AppStoreIconFetcher {
             return
         }
         
-        iconFetchDispatchQueue.sync {
+        iconFetchDispatchQueue.async {
             do {
                 let ans = try JITEnableContext.shared.getAppIcon(withBundleId: bundleID)
-                iconCache[bundleID] = ans
-                completion(ans)
+                DispatchQueue.main.async {
+                    iconCache[bundleID] = ans
+                    completion(ans)
+                }
             } catch {
                 print("Failed to get icon: \(error)")
-                completion(nil)
+                DispatchQueue.main.async {
+                    completion(nil)
+                }
             }
         }
     }
-} 
+}

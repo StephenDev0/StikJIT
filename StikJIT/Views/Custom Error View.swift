@@ -14,6 +14,8 @@ struct CustomErrorView: View {
     var showSecondaryButton: Bool = false
     var messageType: MessageType = .error
     
+    @Environment(\.colorScheme) private var colorScheme
+    
     enum MessageType {
         case error
         case success
@@ -56,19 +58,19 @@ struct CustomErrorView: View {
                 // Title - slightly smaller
                 Text(title)
                     .font(.system(size: 18, weight: .bold, design: .rounded))
-                    .foregroundColor(.white)
+                    .foregroundColor(colorScheme == .dark ? .white : .black)
                     .multilineTextAlignment(.center)
                 
                 // Divider
                 Rectangle()
                     .frame(height: 1)
-                    .foregroundColor(.white.opacity(0.2))
+                    .foregroundColor(colorScheme == .dark ? .white.opacity(0.2) : .black.opacity(0.2))
                     .padding(.horizontal, 12)
                 
                 // Message 
                 Text(message)
                     .font(.system(size: 15, design: .rounded))
-                    .foregroundColor(.white.opacity(0.9))
+                    .foregroundColor(colorScheme == .dark ? .white.opacity(0.9) : .black.opacity(0.9))
                     .multilineTextAlignment(.center)
                     .fixedSize(horizontal: false, vertical: true)
                     .padding(.horizontal, 12)
@@ -83,12 +85,12 @@ struct CustomErrorView: View {
                         }) {
                             Text(primaryButtonText)
                                 .font(.system(size: 16, weight: .semibold, design: .rounded))
-                                .foregroundColor(.black)
+                                .foregroundColor(colorScheme == .dark ? .black : .white)
                                 .frame(height: 38)
                                 .frame(maxWidth: .infinity)
                                 .background(
                                     RoundedRectangle(cornerRadius: 10)
-                                        .fill(Color.white)
+                                        .fill(colorScheme == .dark ? Color.white : Color.blue)
                                 )
                         }
                         
@@ -99,12 +101,12 @@ struct CustomErrorView: View {
                             }) {
                                 Text(secondaryButtonText)
                                     .font(.system(size: 16, weight: .medium, design: .rounded))
-                                    .foregroundColor(.white)
+                                    .foregroundColor(colorScheme == .dark ? .white : .gray)
                                     .frame(height: 38)
                                     .frame(maxWidth: .infinity)
                                     .background(
                                         RoundedRectangle(cornerRadius: 10)
-                                            .fill(Color.gray.opacity(0.3))
+                                            .fill(colorScheme == .dark ? Color.gray.opacity(0.3) : Color.gray.opacity(0.15))
                                     )
                             }
                         }
@@ -121,18 +123,22 @@ struct CustomErrorView: View {
             .frame(width: min(UIScreen.main.bounds.width - 80, 300))
             .background(
                 RoundedRectangle(cornerRadius: 16)
-                    .fill(Color(UIColor.systemGray6).opacity(0.95))
+                    .fill(colorScheme == .dark ? 
+                          Color(UIColor.systemGray6).opacity(0.95) : 
+                          Color(UIColor.systemGray6).opacity(0.95))
                     .overlay(
                         RoundedRectangle(cornerRadius: 16)
-                            .stroke(Color.white.opacity(0.2), lineWidth: 1)
+                            .stroke(colorScheme == .dark ? 
+                                   Color.white.opacity(0.2) : 
+                                   Color.black.opacity(0.1), 
+                                   lineWidth: 1)
                     )
             )
-            .shadow(color: Color.black.opacity(0.25), radius: 16, x: 0, y: 8)
+            .shadow(color: Color.black.opacity(colorScheme == .dark ? 0.25 : 0.15), radius: 16, x: 0, y: 8)
             .scaleEffect(scale)
             .opacity(opacity)
         }
         .onAppear {
-
             withAnimation(.spring(response: 0.25, dampingFraction: 0.7)) {
                 opacity = 1
                 scale = 1
@@ -141,13 +147,11 @@ struct CustomErrorView: View {
     }
     
     private func dismissWithAnimation() {
-
         withAnimation(.easeOut(duration: 0.15)) {
             opacity = 0
             scale = 0.8
         }
         
-
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) {
             onDismiss()
         }

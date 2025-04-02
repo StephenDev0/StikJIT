@@ -7,7 +7,6 @@
 
 import SwiftUI
 import Network
-import em_proxy
 import UniformTypeIdentifiers
 
 let fileManager = FileManager.default
@@ -50,31 +49,11 @@ func httpGet(_ urlString: String, result: @escaping (String?) -> Void){
 }
 
 func UpdateRetrieval() -> Bool{
-    let fileURL = URL.documentsDirectory.appendingPathComponent("version.txt")
-    if !fileManager.fileExists(atPath: fileURL.path) {
-        
-        let urlString = "https://raw.githubusercontent.com/0-Blu/StikJIT/refs/heads/main/version.txt"
-        var FileContent: String = "";
-    
-        httpGet(urlString) { result in
-            if let fc = result {
-                FileContent = fc
-            }
-            
-        }
-        if (FileContent == ""){
-            do {
-                try FileContent.write(to: fileURL, atomically: true, encoding: .utf8)
-                
-                print("Wrote to file successfully")
-            } catch {
-                print("Error writing to file: \(error)")
-            }
-        } else {
-            print("Failed to get version.txt, will try again later.")
-        }
+
+    var ver: String {
+         let marketingVersion = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "1.0"
+         return marketingVersion
     }
-    let ver = try! String(contentsOfFile: fileURL.path)
     let urlString = "https://raw.githubusercontent.com/0-Blu/StikJIT/refs/heads/main/version.txt"
     var res = false
     httpGet(urlString) { result in
