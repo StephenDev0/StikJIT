@@ -390,14 +390,14 @@ struct SettingsView: View {
                                         UIApplication.shared.open(url)
                                     }
                                 }) {
-                                    HStack {
+                                    HStack(alignment: .center) {
                                         Text("Like this app? Check out StikNES!")
                                             .foregroundColor(.secondary)
                                         Spacer()
                                         Image(systemName: "gamecontroller")
                                             .font(.system(size: 14))
                                             .foregroundColor(.blue)
-                                            .frame(width: 24)
+                                            .frame(width: 24) // Keep consistent with LinkRow
                                     }
                                 }
                                 .padding(.vertical, 8)
@@ -616,13 +616,14 @@ struct LinkRow: View {
                 UIApplication.shared.open(url)
             }
         }) {
-            HStack {
+            HStack(alignment: .center) {
                 Text(title)
                     .foregroundColor(.secondary)
                 Spacer()
                 Image(systemName: icon)
                     .font(.system(size: 18))
                     .foregroundColor(.blue)
+                    .frame(width: 24) // Added fixed width
             }
         }
         .padding(.vertical, 8)
