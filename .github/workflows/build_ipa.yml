@@ -1,5 +1,3 @@
-name: Build Unsigned IPA
-
 on:
   push:
     branches: [ "main" ]
@@ -64,4 +62,4 @@ jobs:
         with:
           name: StikJit.ipa
           path: StikJit.ipa
-          retention-days: 90 
+          retention-days: 90
