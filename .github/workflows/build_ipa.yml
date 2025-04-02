@@ -21,8 +21,8 @@ jobs:
 
       - name: Fix Project Format
         run: |
-          sed -i '' 's/objectVersion = 77/objectVersion = 56/' StikJIT.xcodeproj/project.pbxproj
-          sed -i '' 's/preferredProjectObjectVersion = 77/preferredProjectObjectVersion = 56/' StikJIT.xcodeproj/project.pbxproj
+          sed -i '' 's/objectVersion = 77/objectVersion = 56/' StikDebug.xcodeproj/project.pbxproj
+          sed -i '' 's/preferredProjectObjectVersion = 77/preferredProjectObjectVersion = 56/' StikDebug.xcodeproj/project.pbxproj
 
       - name: List Available SDKs
         run: xcodebuild -showsdks
