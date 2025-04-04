@@ -10,6 +10,7 @@ import UIKit
 
 struct ConsoleLogsView: View {
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.colorScheme) private var colorScheme
     @StateObject private var logManager = LogManager.shared
     @State private var autoScroll = true
     @State private var scrollView: ScrollViewProxy? = nil
@@ -23,22 +24,23 @@ struct ConsoleLogsView: View {
     var body: some View {
         NavigationView {
             ZStack {
-                Color.black
+                // Use system background color instead of fixed black
+                Color(colorScheme == .dark ? .black : .white)
                     .edgesIgnoringSafeArea(.all)
                 
                 VStack(spacing: 0) {
-                    // Terminal logs area (made it look somewhat like feathers implementation)
+                    // Terminal logs area with theme support
                     ScrollViewReader { proxy in
                         ScrollView {
                             VStack(spacing: 0) {
-                                // Device Information (all thw way on top)
+                                // Device Information
                                 ForEach(["Version: \(UIDevice.current.systemVersion)",
                                          "Name: \(UIDevice.current.name)",
                                          "Model: \(UIDevice.current.model)",
                                          "StikJIT Version: App Version: 1.0"], id: \.self) { info in
                                     Text("[\(timeString())] ℹ️ \(info)")
                                         .font(.system(size: 11, design: .monospaced))
-                                        .foregroundColor(.white)
+                                        .foregroundColor(colorScheme == .dark ? .white : .black)
                                         .frame(maxWidth: .infinity, alignment: .leading)
                                         .padding(.vertical, 2)
                                         .padding(.horizontal, 4)
@@ -72,7 +74,7 @@ struct ConsoleLogsView: View {
                     
                     Spacer()
                     
-
+                    // Action buttons section - update to be theme aware
                     VStack(spacing: 16) {
                         // Error count with red theme
                         HStack {
@@ -86,7 +88,7 @@ struct ConsoleLogsView: View {
                         }
                         .padding(.horizontal)
                         
-                        // Action buttons with dark background
+                        // Action buttons with theme-appropriate background
                         VStack(spacing: 1) {
                             // Export button
                             Button(action: {
@@ -138,14 +140,18 @@ struct ConsoleLogsView: View {
                                 .padding(.horizontal, 20)
                                 .contentShape(Rectangle())
                             }
-                            .background(Color(red: 0.1, green: 0.1, blue: 0.1))
+                            .background(colorScheme == .dark ? 
+                                Color(red: 0.1, green: 0.1, blue: 0.1) : 
+                                Color(UIColor.secondarySystemBackground))
                             
                             Divider()
-                                .background(Color(red: 0.15, green: 0.15, blue: 0.15))
+                                .background(colorScheme == .dark ? 
+                                    Color(red: 0.15, green: 0.15, blue: 0.15) : 
+                                    Color(UIColor.separator))
                             
                             // Copy button
                             Button(action: {
-                                // Create logs content with device information
+                                // Existing code for copying logs
                                 var logsContent = "=== DEVICE INFORMATION ===\n"
                                 logsContent += "Version: \(UIDevice.current.systemVersion)\n"
                                 logsContent += "Name: \(UIDevice.current.name)\n" 
@@ -153,15 +159,12 @@ struct ConsoleLogsView: View {
                                 logsContent += "StikJIT Version: App Version: 1.0\n\n"
                                 logsContent += "=== LOG ENTRIES ===\n"
                                 
-                                // Add all log entries with proper formatting
                                 logsContent += logManager.logs.map { 
                                     "[\(formatTime(date: $0.timestamp))] [\($0.type.rawValue)] \($0.message)" 
                                 }.joined(separator: "\n")
                                 
-                                // Copy to clipboard
                                 UIPasteboard.general.string = logsContent
                                 
-                                // Show success alert using SwiftUI alert
                                 alertTitle = "Logs Copied"
                                 alertMessage = "Logs have been copied to clipboard."
                                 isError = false
@@ -178,67 +181,72 @@ struct ConsoleLogsView: View {
                                 .padding(.horizontal, 20)
                                 .contentShape(Rectangle())
                             }
-                            .background(Color(red: 0.1, green: 0.1, blue: 0.1))
+                            .background(colorScheme == .dark ? 
+                                Color(red: 0.1, green: 0.1, blue: 0.1) : 
+                                Color(UIColor.secondarySystemBackground))
                         }
                         .cornerRadius(10)
                         .padding(.horizontal)
-                        .padding(.bottom, 20)
+                        .padding(.bottom, 16)
                     }
+                    .padding(.bottom, 8)
                 }
-            }
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .principal) {
-                    Text("Console Logs")
-                        .font(.headline)
-                        .foregroundColor(.white)
-                }
-                
-                ToolbarItem(placement: .navigationBarLeading) {
-                    Button(action: {
-                        dismiss()
-                    }) {
-                        HStack(spacing: 2) {
-                            Image(systemName: "chevron.left")
-                                .font(.system(size: 16, weight: .semibold))
-                            Text("Settings")
-                                .fontWeight(.regular)
-                        }
-                        .foregroundColor(.blue)
+                .navigationBarTitleDisplayMode(.inline)
+                .toolbar {
+                    ToolbarItem(placement: .principal) {
+                        Text("Console Logs")
+                            .font(.headline)
+                            .foregroundColor(colorScheme == .dark ? .white : .black)
                     }
-                }
-                
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    Button(action: {
-                        logManager.clearLogs()
-                    }) {
-                        Text("Clear")
+                    
+                    ToolbarItem(placement: .navigationBarLeading) {
+                        Button(action: {
+                            dismiss()
+                        }) {
+                            HStack(spacing: 2) {
+                                Image(systemName: "chevron.left")
+                                    .font(.system(size: 16, weight: .semibold))
+                                Text("Settings")
+                                    .fontWeight(.regular)
+                            }
                             .foregroundColor(.blue)
+                        }
+                    }
+                    
+                    ToolbarItem(placement: .navigationBarTrailing) {
+                        Button(action: {
+                            logManager.clearLogs()
+                        }) {
+                            Text("Clear")
+                                .foregroundColor(.blue)
+                        }
                     }
                 }
             }
-        }
-        .navigationViewStyle(StackNavigationViewStyle())
-        .overlay(
-            ZStack {
-                if showingCustomAlert {
-                    CustomErrorView(
-                        title: alertTitle,
-                        message: alertMessage,
-                        onDismiss: {
-                            showingCustomAlert = false
-                        },
-                        showButton: true,
-                        primaryButtonText: "OK",
-                        messageType: isError ? .error : .success
-                    )
+            .overlay(
+                Group {
+                    if showingCustomAlert {
+                        Color.black.opacity(0.4)
+                            .edgesIgnoringSafeArea(.all)
+                            .overlay(
+                                CustomErrorView(
+                                    title: alertTitle,
+                                    message: alertMessage,
+                                    onDismiss: {
+                                        showingCustomAlert = false
+                                    },
+                                    showButton: true,
+                                    primaryButtonText: "OK",
+                                    messageType: isError ? .error : .success
+                                )
+                            )
+                    }
                 }
-            }
-        )
+            )
+        }
     }
     
-    // Creates an NSAttributedString that combines timestamp, type, and message
-    // with proper styling for each component
+    // Update to use theme-aware colors
     private func createLogAttributedString(_ logEntry: LogManager.LogEntry) -> NSAttributedString {
         let fullString = NSMutableAttributedString()
         
@@ -246,7 +254,7 @@ struct ConsoleLogsView: View {
         let timestampString = "[\(formatTime(date: logEntry.timestamp))]"
         let timestampAttr = NSAttributedString(
             string: timestampString,
-            attributes: [.foregroundColor: UIColor.gray]
+            attributes: [.foregroundColor: colorScheme == .dark ? UIColor.gray : UIColor.darkGray]
         )
         fullString.append(timestampAttr)
         fullString.append(NSAttributedString(string: " "))
@@ -264,28 +272,25 @@ struct ConsoleLogsView: View {
         // Message part
         let messageAttr = NSAttributedString(
             string: logEntry.message,
-            attributes: [.foregroundColor: UIColor.white]
+            attributes: [.foregroundColor: colorScheme == .dark ? UIColor.white : UIColor.black]
         )
         fullString.append(messageAttr)
         
         return fullString
     }
     
-    // Helper to display current time
     private func timeString() -> String {
         let formatter = DateFormatter()
         formatter.dateFormat = "HH:mm:ss"
         return formatter.string(from: Date())
     }
     
-    // Helper to format Date objects to time strings
     private func formatTime(date: Date) -> String {
         let formatter = DateFormatter()
         formatter.dateFormat = "HH:mm:ss"
         return formatter.string(from: date)
     }
     
-    // Return color based on log type
     private func colorForLogType(_ type: LogManager.LogEntry.LogType) -> Color {
         switch type {
         case .info:
@@ -299,7 +304,6 @@ struct ConsoleLogsView: View {
         }
     }
 }
-
 
 struct ConsoleLogsView_Previews: PreviewProvider {
     static var previews: some View {

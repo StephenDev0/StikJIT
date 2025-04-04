@@ -441,39 +441,53 @@ func startHeartbeatInBackground() {
 
 struct LoadingView: View {
     @State private var animate = false
-
+    @Environment(\.colorScheme) private var colorScheme
+    
     var body: some View {
         ZStack {
-            LinearGradient(gradient: Gradient(colors: [Color.black, Color.black]),
-                           startPoint: .topLeading,
-                           endPoint: .bottomTrailing)
+            // Use system background color instead of fixed black
+            Color(colorScheme == .dark ? .black : .white)
                 .ignoresSafeArea()
-
+            
             VStack {
                 ZStack {
+                    // Background circle - slightly visible in both themes
                     Circle()
                         .stroke(lineWidth: 8)
-                        .foregroundColor(Color.white.opacity(0.3))
+                        .foregroundColor(colorScheme == .dark ? 
+                            Color.white.opacity(0.3) : 
+                            Color.black.opacity(0.1))
                         .frame(width: 80, height: 80)
-
+                    
+                    // Animated circle - adapts to theme
                     Circle()
                         .trim(from: 0, to: 0.7)
                         .stroke(AngularGradient(
-                            gradient: Gradient(colors: [Color.white.opacity(0.8), Color.white.opacity(0.3)]),
+                            gradient: Gradient(colors: [
+                                colorScheme == .dark ? Color.white.opacity(0.8) : Color.blue.opacity(0.8),
+                                colorScheme == .dark ? Color.white.opacity(0.3) : Color.blue.opacity(0.3)
+                            ]),
                             center: .center
                         ), style: StrokeStyle(lineWidth: 6, lineCap: .round))
                         .rotationEffect(.degrees(animate ? 360 : 0))
                         .frame(width: 80, height: 80)
                         .animation(Animation.linear(duration: 1.2).repeatForever(autoreverses: false), value: animate)
                 }
-                .shadow(color: .white.opacity(0.5), radius: 10, x: 0, y: 0)
+                // Shadow adapts to theme
+                .shadow(color: colorScheme == .dark ? 
+                    .white.opacity(0.5) : 
+                    .blue.opacity(0.3), 
+                    radius: 10, x: 0, y: 0)
                 .onAppear {
                     animate = true
                 }
-
+                
+                // Text adapts to theme
                 Text("Loading...")
                     .font(.system(size: 20, weight: .medium, design: .rounded))
-                    .foregroundColor(.white.opacity(0.8))
+                    .foregroundColor(colorScheme == .dark ? 
+                        .white.opacity(0.8) : 
+                        .black.opacity(0.8))
                     .padding(.top, 20)
                     .opacity(animate ? 1.0 : 0.5)
                     .animation(Animation.easeInOut(duration: 1.5).repeatForever(autoreverses: true), value: animate)
