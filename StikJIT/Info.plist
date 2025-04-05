@@ -2,18 +2,22 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
-	<key>CFBundleURLTypes</key>
-	<array>
-		<dict>
-			<key>CFBundleTypeRole</key>
-			<string>Editor</string>
-			<key>CFBundleURLName</key>
-			<string>com.stik.StikJIT.enableJIT</string>
-			<key>CFBundleURLSchemes</key>
-			<array>
-				<string>stikjit</string>
-			</array>
-		</dict>
-	</array>
+    <key>NSBonjourServices</key>
+    <array>
+        <string>_apple-mobdev2._tcp</string>
+    </array>
+    <key>CFBundleURLTypes</key>
+    <array>
+        <dict>
+            <key>CFBundleTypeRole</key>
+            <string>Editor</string>
+            <key>CFBundleURLName</key>
+            <string>com.stik.StikJIT.enableJIT</string>
+            <key>CFBundleURLSchemes</key>
+            <array>
+                <string>stikjit</string>
+            </array>
+        </dict>
+    </array>
 </dict>
 </plist>

@@ -29,7 +29,7 @@ class LogManager: ObservableObject {
     
     private init() {
         // Add initial system info logs
-        addInfoLog("StikJIT starting up")
+        addInfoLog("StikDebug starting up")
         addInfoLog("Initializing environment")
     }
     

@@ -8,7 +8,7 @@
 import SwiftUI
 import UIKit
 
-struct ConsoleLogsView: View {
+struct ConsoleView: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(\.colorScheme) private var colorScheme
     @StateObject private var logManager = LogManager.shared
@@ -37,7 +37,7 @@ struct ConsoleLogsView: View {
                                 ForEach(["Version: \(UIDevice.current.systemVersion)",
                                          "Name: \(UIDevice.current.name)",
                                          "Model: \(UIDevice.current.model)",
-                                         "StikJIT Version: App Version: 1.0"], id: \.self) { info in
+                                         "StikDebug Version: App Version: 1.0"], id: \.self) { info in
                                     Text("[\(timeString())] ℹ️ \(info)")
                                         .font(.system(size: 11, design: .monospaced))
                                         .foregroundColor(colorScheme == .dark ? .white : .black)
@@ -97,7 +97,7 @@ struct ConsoleLogsView: View {
                                 logsContent += "Version: \(UIDevice.current.systemVersion)\n"
                                 logsContent += "Name: \(UIDevice.current.name)\n" 
                                 logsContent += "Model: \(UIDevice.current.model)\n"
-                                logsContent += "StikJIT Version: App Version: 1.0\n\n"
+                                logsContent += "StikDebug Version: App Version: 1.0\n\n"
                                 logsContent += "=== LOG ENTRIES ===\n"
                                 
                                 // Add all log entries with proper formatting
@@ -110,7 +110,7 @@ struct ConsoleLogsView: View {
                                 let dateFormatter = DateFormatter()
                                 dateFormatter.dateFormat = "yyyy-MM-dd_HH-mm-ss"
                                 let timestamp = dateFormatter.string(from: Date())
-                                let fileURL = documentsDirectory.appendingPathComponent("StikJIT_Logs_\(timestamp).txt")
+                                let fileURL = documentsDirectory.appendingPathComponent("StikDebug_Logs_\(timestamp).txt")
                                 
                                 do {
                                     // Write the logs to the file
@@ -118,7 +118,7 @@ struct ConsoleLogsView: View {
                                     
                                     // Set alert variables and show the alert
                                     alertTitle = "Logs Exported"
-                                    alertMessage = "Logs have been saved to Files app in StikJIT folder."
+                                    alertMessage = "Logs have been saved to Files app in StikDebug folder."
                                     isError = false
                                     showingCustomAlert = true
                                 } catch {
@@ -156,7 +156,7 @@ struct ConsoleLogsView: View {
                                 logsContent += "Version: \(UIDevice.current.systemVersion)\n"
                                 logsContent += "Name: \(UIDevice.current.name)\n" 
                                 logsContent += "Model: \(UIDevice.current.model)\n"
-                                logsContent += "StikJIT Version: App Version: 1.0\n\n"
+                                logsContent += "StikDebug Version: App Version: 1.0\n\n"
                                 logsContent += "=== LOG ENTRIES ===\n"
                                 
                                 logsContent += logManager.logs.map { 
@@ -191,12 +191,24 @@ struct ConsoleLogsView: View {
                     }
                     .padding(.bottom, 8)
                 }
-                .navigationBarTitleDisplayMode(.inline)
-                .toolbar {
-                    ToolbarItem(placement: .principal) {
-                        Text("Console Logs")
-                            .font(.headline)
-                            .foregroundColor(colorScheme == .dark ? .white : .black)
+            }
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .principal) {
+                    Text("Console")
+                        .font(.headline)
+                        .foregroundColor(.white)
+                }
+                
+                ToolbarItem(placement: .navigationBarLeading) {
+                    Button(action: {
+                        dismiss()
+                    }) {
+                        HStack(spacing: 2) {
+                            Text("Exit")
+                                .fontWeight(.regular)
+                        }
+                        .foregroundColor(.blue)
                     }
                     
                     ToolbarItem(placement: .navigationBarLeading) {
@@ -305,8 +317,8 @@ struct ConsoleLogsView: View {
     }
 }
 
-struct ConsoleLogsView_Previews: PreviewProvider {
+struct ConsoleView_Previews: PreviewProvider {
     static var previews: some View {
-        ConsoleLogsView()
+        ConsoleView()
     }
 } 
