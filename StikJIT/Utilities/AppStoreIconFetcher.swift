@@ -1,5 +1,6 @@
 //
-//  AppStoreIconFetcher.swift
+//  IconsFetcher.swift
+//  Dont change the name of the actual file (it will break stuff)
 //  StikJIT
 //
 //  Created by neoarz on 3/28/25.
@@ -8,6 +9,7 @@
 import UIKit
 
 // Not AppStore
+// Uses idevice
 class AppStoreIconFetcher {
     static private var iconCache: [String: UIImage] = [:]
     static private let iconFetchDispatchQueue = DispatchQueue(label: "com.stik.StikJIT.iconFetchQueue", attributes: .concurrent)

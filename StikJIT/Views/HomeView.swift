@@ -17,9 +17,10 @@ extension UIDocumentPickerViewController {
 struct HomeView: View {
 
     @AppStorage("username") private var username = "User"
-    @AppStorage("customBackgroundColor") private var customBackgroundColorHex: String = Color.primaryBackground.toHex() ?? "#000000"
+    @AppStorage("customBackgroundColor") private var customBackgroundColorHex: String = ""
     @AppStorage("autoQuitAfterEnablingJIT") private var doAutoQuitAfterEnablingJIT = false
-    @State private var selectedBackgroundColor: Color = Color(hex: UserDefaults.standard.string(forKey: "customBackgroundColor") ?? "#000000") ?? Color.primaryBackground
+    @State private var selectedBackgroundColor: Color = Color(hex: UserDefaults.standard.string(forKey: "customBackgroundColor") ?? "") ?? .clear
+    @Environment(\.colorScheme) private var colorScheme
     let timer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
     @AppStorage("bundleID") private var bundleID: String = ""
     @State private var isProcessing = false
@@ -38,7 +39,11 @@ struct HomeView: View {
 
     var body: some View {
         ZStack {
-            selectedBackgroundColor.edgesIgnoringSafeArea(.all)
+            // Use the background color or default to appearance-based color if not set
+            (selectedBackgroundColor == .clear ? 
+                (colorScheme == .dark ? Color.black : Color.white) : 
+                selectedBackgroundColor)
+            .edgesIgnoringSafeArea(.all)
             
             VStack(spacing: 25) {
                 Spacer()
@@ -166,6 +171,11 @@ struct HomeView: View {
         }
         .onAppear {
             checkPairingFileExists()
+            // Don't initialize specific color value when empty - empty means "use system theme"
+            // This was causing the toggle to turn off when returning to settings
+            
+            // Initialize background color
+            refreshBackground()
         }
         .onReceive(timer) { _ in
             refreshBackground()
@@ -279,7 +289,11 @@ struct HomeView: View {
     }
     
     private func refreshBackground() {
-        selectedBackgroundColor = Color(hex: customBackgroundColorHex) ?? Color.primaryBackground
+        if customBackgroundColorHex.isEmpty {
+            selectedBackgroundColor = colorScheme == .dark ? Color.black : Color.white
+        } else {
+            selectedBackgroundColor = Color(hex: customBackgroundColorHex) ?? (colorScheme == .dark ? Color.black : Color.white)
+        }
     }
     
     private func startJITInBackground(with bundleID: String) {

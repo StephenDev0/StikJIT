@@ -8,17 +8,19 @@ import UniformTypeIdentifiers
 
 struct SettingsView: View {
     @AppStorage("username") private var username = "User"
-    @AppStorage("customBackgroundColor") private var customBackgroundColorHex: String = Color.primaryBackground.toHex() ?? "#000000"
+    @AppStorage("customBackgroundColor") private var customBackgroundColorHex: String = ""
     @AppStorage("selectedAppIcon") private var selectedAppIcon: String = "AppIcon"
     @State private var isShowingPairingFilePicker = false
+    @Environment(\.colorScheme) private var colorScheme
 
-    @State private var selectedBackgroundColor: Color = Color.primaryBackground
+    @State private var selectedBackgroundColor: Color = .clear
     @State private var showIconPopover = false
     @State private var showPairingFileMessage = false
     @State private var pairingFileIsValid = false
     @State private var isImportingFile = false
     @State private var importProgress: Float = 0.0
     @State private var is_lc = false
+    @State private var showColorPickerPopup = false
     
     @StateObject private var mountProg = MountingProgress.shared
     @StateObject private var tunnelManager = TunnelManager.shared
@@ -27,9 +29,12 @@ struct SettingsView: View {
     
     @State private var showingConsoleLogsView = false
     
-    @State private var remoteVersion: String = "-"
-    
-    // Developer profile image URLs
+    private var appVersion: String {
+        let marketingVersion = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "1.0"
+        return marketingVersion
+    }
+
+    // Developer profile image URLs 
     private let developerProfiles: [String: String] = [
         "Stephen": "https://github.com/0-Blu.png",
         "jkcoxson": "https://github.com/jkcoxson.png",
@@ -77,6 +82,11 @@ struct SettingsView: View {
                                 .padding(14)
                                 .background(Color(UIColor.tertiarySystemBackground))
                                 .cornerRadius(12)
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: 12)
+                                        .stroke(Color.gray.opacity(0.2), lineWidth: 1)
+                                )
+                                .shadow(color: Color.black.opacity(0.03), radius: 1, x: 0, y: 1)
                         }
                         .padding(.horizontal, 16)
                         .padding(.bottom, 8)
@@ -94,15 +104,72 @@ struct SettingsView: View {
                                 .foregroundColor(.primary)
                                 .padding(.bottom, 4)
                             
-                            ColorPicker("Background Color", selection: $selectedBackgroundColor)
-                                .onChange(of: selectedBackgroundColor) { newColor in
-                                    saveCustomBackgroundColor(newColor)
+                            // Theme selector with segmented control style
+                            VStack(alignment: .leading, spacing: 10) {
+                                Text("Background Color")
+                                    .font(.subheadline)
+                                    .foregroundColor(.secondary)
+                                
+                                // Clean segmented style picker
+                                Picker("Theme Mode", selection: Binding(
+                                    get: { customBackgroundColorHex.isEmpty },
+                                    set: { newValue in
+                                        if newValue {
+                                            // System theme selected
+                                            customBackgroundColorHex = ""
+                                            selectedBackgroundColor = colorScheme == .dark ? Color.black : Color.white
+                                        } else if customBackgroundColorHex.isEmpty {
+                                            // Custom color selected - initialize with current theme color
+                                            let initialColor = colorScheme == .dark ? Color.black : Color.white
+                                            customBackgroundColorHex = initialColor.toHex() ?? "#000000"
+                                            selectedBackgroundColor = initialColor
+                                            
+                                            // Don't open color picker popup automatically anymore
+                                            // User will need to press the "Change Color" button
+                                        }
+                                    }
+                                )) {
+                                    Text("System").tag(true)
+                                    Text("Custom").tag(false)
                                 }
-                                .foregroundColor(.primary)
-                                .padding(.vertical, 6)
+                                .pickerStyle(SegmentedPickerStyle())
+                                .padding(.vertical, 4)
+                                
+                                // Show selection button and color picker inline when in custom mode
+                                if !customBackgroundColorHex.isEmpty {
+                                    HStack {
+                                        // Left side - just text, no color preview
+                                        Text("Choose color")
+                                            .font(.subheadline)
+                                            .fontWeight(.medium)
+                                        
+                                        Spacer()
+                                        
+                                        // Right side - embedded color picker
+                                        ColorPicker("", selection: $selectedBackgroundColor, supportsOpacity: false)
+                                            .labelsHidden()
+                                            .scaleEffect(0.8)
+                                            .onChange(of: selectedBackgroundColor) { newColor in
+                                                saveCustomBackgroundColor(newColor)
+                                            }
+                                    }
+                                    .padding(.vertical, 8)
+                                    .transition(.opacity)
+                                }
+                                
+                                // Help text - only show for system mode
+                                if customBackgroundColorHex.isEmpty {
+                                    Text("Uses light/dark mode system colors")
+                                        .font(.caption)
+                                        .foregroundColor(.secondary)
+                                        .padding(.top, 4)
+                                }
+                            }
+                            .padding(.vertical, 6)
                         }
                         .padding(.vertical, 20)
                         .padding(.horizontal, 16)
+                        .animation(.easeInOut(duration: 0.2), value: customBackgroundColorHex.isEmpty)
                     }
                     
                     // VPN Control section with Stop VPN button
@@ -371,7 +438,7 @@ struct SettingsView: View {
                         .padding(.horizontal, 16)
                     }
                     .padding(.bottom, 4)
-                    
+
                     // System Logs card
                     SettingsCard {
                         Button(action: {
@@ -404,18 +471,12 @@ struct SettingsView: View {
                     // Version info section
                     HStack {
                         Spacer()
-                        if remoteVersion == "-" {
-                            Text("Checking version...")
-                                .font(.footnote)
-                                .foregroundColor(.secondary.opacity(0.8))
-                                .onAppear {
-                                    fetchVersionFromGitHub()
-                                }
-                        } else {
-                            Text("Version \(remoteVersion) • iOS \(UIDevice.current.systemVersion)")
-                                .font(.footnote)
-                                .foregroundColor(.secondary.opacity(0.8))
-                        }
+                        
+                        Text("Version \(appVersion) • iOS \(UIDevice.current.systemVersion)")
+                            .font(.footnote)
+                            .foregroundColor(.secondary.opacity(0.8))
+                        
+
                         Spacer()
                     }
                     .padding(.top, 8)
@@ -485,11 +546,16 @@ struct SettingsView: View {
     }
 
     private func loadCustomBackgroundColor() {
-        selectedBackgroundColor = Color(hex: customBackgroundColorHex) ?? Color.primaryBackground
+        if customBackgroundColorHex.isEmpty {
+            selectedBackgroundColor = colorScheme == .dark ? Color.black : Color.white
+        } else {
+            selectedBackgroundColor = Color(hex: customBackgroundColorHex) ?? (colorScheme == .dark ? Color.black : Color.white)
+        }
     }
 
     private func saveCustomBackgroundColor(_ color: Color) {
-        customBackgroundColorHex = color.toHex() ?? "#000000"
+        // Always save the custom color if we got here (since auto theme mode is disabled)
+        customBackgroundColorHex = color.toHex() ?? ""
     }
 
     private func changeAppIcon(to iconName: String) {
@@ -520,22 +586,6 @@ struct SettingsView: View {
             .cornerRadius(10)
         }
         .padding(.horizontal)
-    }
-
-    private func fetchVersionFromGitHub() {
-        let versionURL = "https://raw.githubusercontent.com/0-Blu/StikJIT/refs/heads/main/version.txt"
-        guard let url = URL(string: versionURL) else { return }
-        URLSession.shared.dataTask(with: url) { data, response, error in
-            guard let data = data, error == nil else {
-                print("Failed to fetch version: \(error?.localizedDescription ?? "Unknown error")")
-                return
-            }
-            if let versionString = String(data: data, encoding: .utf8)?.trimmingCharacters(in: .whitespacesAndNewlines) {
-                DispatchQueue.main.async {
-                    self.remoteVersion = versionString
-                }
-            }
-        }.resume()
     }
 }
 
@@ -579,13 +629,14 @@ struct LinkRow: View {
                 UIApplication.shared.open(url)
             }
         }) {
-            HStack {
+            HStack(alignment: .center) {
                 Text(title)
                     .foregroundColor(.secondary)
                 Spacer()
                 Image(systemName: icon)
                     .font(.system(size: 18))
                     .foregroundColor(.blue)
+                    .frame(width: 24) // Added fixed width
             }
         }
         .padding(.vertical, 8)
