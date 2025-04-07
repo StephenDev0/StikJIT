@@ -16,7 +16,33 @@
 #include <CoreFoundation/CoreFoundation.h>
 #include <limits.h>
 
+
 #include "jit.h"
+
+int enable_developer_mode(TcpProviderHandle *tcp_client){
+    LockdowndClientHandle* client;
+    IdeviceErrorCode err = lockdownd_connect_tcp(tcp_client,&client);
+    if (err != IdeviceSuccess){
+        fprintf(stderr, "Failed to connect to lockdownd: %d\n", err);
+        return 3;
+    }
+    plist_t developer_mode_plist = NULL;
+    uint8_t enabled = 0;
+    err =
+        lockdownd_get_value(client, "DeveloperModeStatus",
+                            "com.apple.security.mac.amfi", &developer_mode_plist);
+    if (err != IdeviceSuccess) {
+        fprintf(stderr, "Failed to get product version: %d\n", err);
+        return 1;
+    } else {
+      
+      plist_get_bool_val(developer_mode_plist, &enabled);
+      printf("Developer mode enabled: %s\n", enabled ? "true" : "false");
+      plist_free(developer_mode_plist);
+      
+    }
+    return enabled ? 0 : 2;
+}
 
 int debug_app(TcpProviderHandle* tcp_provider, const char *bundle_id, LogFuncC logger) {
     // Initialize logger

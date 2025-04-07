@@ -152,6 +152,7 @@ struct HeartbeatApp: App {
                                             }
                                             
                                             startHeartbeatInBackground()
+                                            enableDevModeinBG()
                                         } else {
                                             isLoading = false
                                         }
@@ -400,6 +401,9 @@ func isPairing() -> Bool {
     }
     return true
 }
+
+
+
 
 func startHeartbeatInBackground() {
     let heartBeat = Thread {

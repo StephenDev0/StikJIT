@@ -12,6 +12,7 @@ struct SettingsView: View {
     @AppStorage("selectedAppIcon") private var selectedAppIcon: String = "AppIcon"
     @AppStorage("autoQuitAfterEnablingJIT") private var doAutoQuitAfterEnablingJIT = false
     @AppStorage("skipGetTaskAllowCheck") private var doSkipGetTaskAllowCheck = false
+    @AppStorage("enableDeveloperMode") private var doenableDeveloperMode = false
     @State private var isShowingPairingFilePicker = false
     @Environment(\.colorScheme) private var colorScheme
 
@@ -33,6 +34,16 @@ struct SettingsView: View {
     private var appVersion: String {
         let marketingVersion = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "1.0"
         return marketingVersion
+    }
+    
+    private func EnableDeveloperMode() -> Int {
+        return JITEnableContext.shared.enableDeveloperMode(logger: { message in
+            
+            if let message = message {
+
+                LogManager.shared.addInfoLog(message)
+            }
+        })
     }
 
     // Developer profile image URLs 
@@ -187,6 +198,27 @@ struct SettingsView: View {
                             Toggle("Skip get-task-allow Check", isOn: $doSkipGetTaskAllowCheck)
                                 .foregroundColor(.primary)
                                 .padding(.vertical, 6)
+                            Toggle("Enable Developer Mode", isOn: $doenableDeveloperMode)
+                                .foregroundColor(.primary)
+                                .padding(.vertical, 6)
+                                .onChange(of: doenableDeveloperMode) { dowestart in
+                                    if dowestart {
+                                        LogManager.shared.addInfoLog("Enabling developer mode")
+                                        
+                                        let success = JITEnableContext.shared.enableDeveloperMode(logger: { message in
+                                            
+                                            if let message = message {
+
+                                                LogManager.shared.addInfoLog(message)
+                                            }
+                                        })
+                                        if (success != 0){
+                                            LogManager.shared.addInfoLog("Failed to enable developer mode, code: \(success)")
+                                        } else {
+                                            LogManager.shared.addInfoLog("Successfully enabled developer mode")
+                                        }
+                                    }
+                                }
                         }
                         .padding(.vertical, 20)
                         .padding(.horizontal, 16)

@@ -1,10 +1,6 @@
 // Jackson Coxson
 // Bindings to idevice - https://github.com/jkcoxson/idevice
 
-
-#ifndef IDEVICE_H
-#define IDEVICE_H
-
 #include <stdarg.h>
 #include <stdbool.h>
 #include <stdint.h>
@@ -14,12 +10,11 @@
 
 #define LOCKDOWN_PORT 62078
 
-
 typedef enum IdeviceErrorCode {
   IdeviceSuccess = 0,
   Socket = -1,
-  Ssl = -2,
-  SslSetup = -3,
+  Tls = -2,
+  TlsBuilderFailed = -3,
   Plist = -4,
   Utf8 = -5,
   UnexpectedResponse = -6,
@@ -103,6 +98,11 @@ typedef struct IdeviceSocketHandle IdeviceSocketHandle;
 typedef struct ImageMounterHandle ImageMounterHandle;
 
 typedef struct InstallationProxyClientHandle InstallationProxyClientHandle;
+
+/**
+ * Opaque handle to a ProcessControlClient
+ */
+typedef struct LocationSimulationAdapterHandle LocationSimulationAdapterHandle;
 
 typedef struct LockdowndClientHandle LockdowndClientHandle;
 
@@ -922,6 +922,66 @@ enum IdeviceErrorCode installation_proxy_get_apps(struct InstallationProxyClient
 void installation_proxy_client_free(struct InstallationProxyClientHandle *handle);
 
 /**
+ * Creates a new ProcessControlClient from a RemoteServerClient
+ *
+ * # Arguments
+ * * [`server`] - The RemoteServerClient to use
+ * * [`handle`] - Pointer to store the newly created ProcessControlClient handle
+ *
+ * # Returns
+ * An error code indicating success or failure
+ *
+ * # Safety
+ * `server` must be a valid pointer to a handle allocated by this library
+ * `handle` must be a valid pointer to a location where the handle will be stored
+ */
+enum IdeviceErrorCode location_simulation_new(struct RemoteServerAdapterHandle *server,
+                                              struct LocationSimulationAdapterHandle **handle);
+
+/**
+ * Frees a ProcessControlClient handle
+ *
+ * # Arguments
+ * * [`handle`] - The handle to free
+ *
+ * # Safety
+ * `handle` must be a valid pointer to a handle allocated by this library or NULL
+ */
+void location_simulation_free(struct LocationSimulationAdapterHandle *handle);
+
+/**
+ * Clears the location set
+ *
+ * # Arguments
+ * * [`handle`] - The LocationSimulation handle
+ *
+ * # Returns
+ * An error code indicating success or failure
+ *
+ * # Safety
+ * All pointers must be valid or NULL where appropriate
+ */
+enum IdeviceErrorCode location_simulation_clear(struct LocationSimulationAdapterHandle *handle);
+
+/**
+ * Sets the location
+ *
+ * # Arguments
+ * * [`handle`] - The LocationSimulation handle
+ * * [`latitude`] - The latitude to set
+ * * [`longitude`] - The longitude to set
+ *
+ * # Returns
+ * An error code indicating success or failure
+ *
+ * # Safety
+ * All pointers must be valid or NULL where appropriate
+ */
+enum IdeviceErrorCode location_simulation_set(struct LocationSimulationAdapterHandle *handle,
+                                              double latitude,
+                                              double longitude);
+
+/**
  * Connects to lockdownd service using TCP provider
  *
  * # Arguments
@@ -1016,7 +1076,8 @@ enum IdeviceErrorCode lockdownd_start_service(struct LockdowndClientHandle *clie
  *
  * # Arguments
  * * `client` - A valid LockdowndClient handle
- * * `value` - The value to get (null-terminated string)
+ * * `key` - The value to get (null-terminated string)
+ * * `domain` - The value to get (null-terminated string)
  * * `out_plist` - Pointer to store the returned plist value
  *
  * # Returns
@@ -1028,7 +1089,8 @@ enum IdeviceErrorCode lockdownd_start_service(struct LockdowndClientHandle *clie
  * `out_plist` must be a valid pointer to store the plist
  */
 enum IdeviceErrorCode lockdownd_get_value(struct LockdowndClientHandle *client,
-                                          const char *value,
+                                          const char *key,
+                                          const char *domain,
                                           void **out_plist);
 
 /**
@@ -1912,6 +1974,89 @@ enum IdeviceErrorCode xpc_device_get_service_names(struct XPCDeviceAdapterHandle
 void xpc_device_free_service_names(char **names, uintptr_t count);
 
 /**
+ * Connects to the Springboard service using a TCP provider
+ *
+ * # Arguments
+ * * [`provider`] - A TcpProvider
+ * * [`client`] - On success, will be set to point to a newly allocated SpringBoardServicesClient handle
+ *
+ * # Returns
+ * An error code indicating success or failure
+ *
+ * # Safety
+ * `provider` must be a valid pointer to a handle allocated by this library
+ * `client` must be a valid, non-null pointer to a location where the handle will be stored
+ */
+enum IdeviceErrorCode springboard_services_connect_tcp(struct TcpProviderHandle *provider,
+                                                       struct SpringBoardServicesClientHandle **client);
+
+/**
+ * Connects to the Springboard service using a usbmuxd provider
+ *
+ * # Arguments
+ * * [`provider`] - A UsbmuxdProvider
+ * * [`client`] - On success, will be set to point to a newly allocated SpringBoardServicesClient handle
+ *
+ * # Returns
+ * An error code indicating success or failure
+ *
+ * # Safety
+ * `provider` must be a valid pointer to a handle allocated by this library
+ * `client` must be a valid, non-null pointer to a location where the handle will be stored
+ */
+enum IdeviceErrorCode springboard_services_connect_usbmuxd(struct UsbmuxdProviderHandle *provider,
+                                                           struct SpringBoardServicesClientHandle **client);
+
+/**
+ * Creates a new SpringBoardServices client from an existing Idevice connection
+ *
+ * # Arguments
+ * * [`socket`] - An IdeviceSocket handle
+ * * [`client`] - On success, will be set to point to a newly allocated SpringBoardServicesClient handle
+ *
+ * # Returns
+ * An error code indicating success or failure
+ *
+ * # Safety
+ * `socket` must be a valid pointer to a handle allocated by this library
+ * `client` must be a valid, non-null pointer to a location where the handle will be stored
+ */
+enum IdeviceErrorCode springboard_services_new(struct IdeviceHandle *socket,
+                                               struct SpringBoardServicesClientHandle **client);
+
+/**
+ * Gets the icon of the specified app by bundle identifier
+ *
+ * # Arguments
+ * * `client` - A valid SpringBoardServicesClient handle
+ * * `bundle_identifier` - The identifiers of the app to get icon
+ * * `out_result` - On success, will be set to point to a newly allocated png data
+ *
+ * # Returns
+ * An error code indicating success or failure
+ *
+ * # Safety
+ * `client` must be a valid pointer to a handle allocated by this library
+ * `out_result` must be a valid, non-null pointer to a location where the result will be stored
+ */
+enum IdeviceErrorCode springboard_services_get_icon(struct SpringBoardServicesClientHandle *client,
+                                                    const char *bundle_identifier,
+                                                    void **out_result,
+                                                    size_t *out_result_len);
+
+/**
+ * Frees an SpringBoardServicesClient handle
+ *
+ * # Arguments
+ * * [`handle`] - The handle to free
+ *
+ * # Safety
+ * `handle` must be a valid pointer to the handle that was allocated by this library,
+ * or NULL (in which case this function does nothing)
+ */
+void springboard_services_free(struct SpringBoardServicesClientHandle *handle);
+
+/**
  * Connects to a usbmuxd instance over TCP
  *
  * # Arguments
@@ -2010,36 +2155,3 @@ enum IdeviceErrorCode idevice_usbmuxd_unix_addr_new(const char *addr,
  * or NULL (in which case this function does nothing)
  */
 void idevice_usbmuxd_addr_free(struct UsbmuxdAddrHandle *usbmuxd_addr);
-
-enum IdeviceErrorCode springboard_services_connect_tcp(struct TcpProviderHandle *provider,
-                                                             struct SpringBoardServicesClientHandle **client);
-
-enum IdeviceErrorCode springboard_services_connect_usbmuxd(struct UsbmuxdProviderHandle *provider,
-                                                                 struct SpringBoardServicesClientHandle **client);
-
-enum IdeviceErrorCode springboard_services_new(struct IdeviceHandle *socket,
-                                                     struct SpringBoardServicesClientHandle **client);
-
-/**
- * Gets the icon of the specified app by bundle identifier
- *
- * # Arguments
- * * `client` - A valid SpringBoardServicesClient handle
- * * `bundle_identifier` - The identifiers of the app to get icon
- * * `out_result` - On success, will be set to point to a newly allocated png data
- *
- * # Returns
- * An error code indicating success or failure
- *
- * # Safety
- * `client` must be a valid pointer to a handle allocated by this library
- * `out_result` must be a valid, non-null pointer to a location where the result will be stored
- */
-enum IdeviceErrorCode springboard_services_get_icon(struct SpringBoardServicesClientHandle *client,
-                                                          const char *bundle_identifier,
-                                                          void **out_result,
-                                                          size_t *out_result_len);
-
-void springboard_services_free(struct SpringBoardServicesClientHandle *handle);
-
-#endif

@@ -19,6 +19,7 @@ struct HomeView: View {
     @AppStorage("username") private var username = "User"
     @AppStorage("customBackgroundColor") private var customBackgroundColorHex: String = ""
     @AppStorage("autoQuitAfterEnablingJIT") private var doAutoQuitAfterEnablingJIT = false
+    @AppStorage("enableDeveloperMode") private var doenableDeveloperMode = false
     @State private var selectedBackgroundColor: Color = Color(hex: UserDefaults.standard.string(forKey: "customBackgroundColor") ?? "") ?? .clear
     @Environment(\.colorScheme) private var colorScheme
     let timer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
@@ -274,6 +275,7 @@ struct HomeView: View {
             selectedBackgroundColor = Color(hex: customBackgroundColorHex) ?? (colorScheme == .dark ? Color.black : Color.white)
         }
     }
+    
     
     private func startJITInBackground(with bundleID: String) {
         isProcessing = true

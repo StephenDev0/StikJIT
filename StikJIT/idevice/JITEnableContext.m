@@ -121,6 +121,22 @@ JITEnableContext* sharedJITContext = nil;
 
 }
 
+- (int)enableDeveloperMode:logger:(LogFunc)logger  {
+
+    if(!provider) {
+        if(logger) {
+            logger(@"Provider not initialized!");
+        }
+        NSLog(@"Provider not initialized!");
+        return 4;
+    }
+    
+
+    
+    return enable_developer_mode(provider);
+
+}
+
 
 // apps may have different name, so we must use BnudleId as key. [bundleId:name]
 - (NSDictionary<NSString*, NSString*>*)getAppListWithError:(NSError**)error {
