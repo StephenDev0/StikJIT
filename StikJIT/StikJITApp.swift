@@ -152,7 +152,6 @@ struct HeartbeatApp: App {
                                             }
                                             
                                             startHeartbeatInBackground()
-                                            enableDevModeinBG()
                                         } else {
                                             isLoading = false
                                         }
