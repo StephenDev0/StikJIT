@@ -36,15 +36,7 @@ struct SettingsView: View {
         return marketingVersion
     }
     
-    private func EnableDeveloperMode() -> Int {
-        return JITEnableContext.shared.enableDeveloperMode(logger: { message in
-            
-            if let message = message {
 
-                LogManager.shared.addInfoLog(message)
-            }
-        })
-    }
 
     // Developer profile image URLs 
     private let developerProfiles: [String: String] = [
@@ -205,7 +197,7 @@ struct SettingsView: View {
                                     if dowestart {
                                         LogManager.shared.addInfoLog("Enabling developer mode")
                                         
-                                        let success = JITEnableContext.shared.enableDeveloperMode(logger: { message in
+                                        let success = JITEnableContext.shared.enableDeveloperMode({ message in
                                             
                                             if let message = message {
 

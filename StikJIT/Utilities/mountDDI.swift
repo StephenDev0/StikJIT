@@ -173,7 +173,7 @@ func mountPersonalDDI(deviceIP: String = "10.7.0.1", imagePath: String, trustcac
     }
     
     var uniqueChipIDPlist: plist_t?
-    guard lockdownd_get_value(lockdownClient, "UniqueChipID".cString(using: .utf8), &uniqueChipIDPlist) == IdeviceSuccess else {
+    guard lockdownd_get_value(lockdownClient, "UniqueChipID".cString(using: .utf8), &uniqueChipIDPlist, nil) == IdeviceSuccess else {
         print("Failed to get UniqueChipID")
         return 8 // EC: 8
     }

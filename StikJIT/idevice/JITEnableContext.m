@@ -121,7 +121,7 @@ JITEnableContext* sharedJITContext = nil;
 
 }
 
-- (int)enableDeveloperMode:logger:(LogFunc)logger  {
+- (int)enableDeveloperMode:(LogFunc)logger  {
 
     if(!provider) {
         if(logger) {
