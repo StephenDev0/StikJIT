@@ -339,8 +339,36 @@ struct SettingsView: View {
                             self.mounted = isMounted()
                         }
                     }
-
                     
+                    // StosVPN section
+                    SettingsCard {
+                        VStack(alignment: .leading, spacing: 20) {
+                            Text("StosVPN")
+                                .font(.headline)
+                                .foregroundColor(.primary)
+                                .padding(.bottom, 4)
+                            
+                            Button {
+                            if let url = URL(string: "https://apps.apple.com/us/app/stosvpn/id6744003051") {
+                                UIApplication.shared.open(url)
+                            }
+                            } label: {
+                                HStack {
+                                    Image(systemName: "network")
+                                        .font(.system(size: 18))
+                                    Text("Download StosVPN")
+                                        .fontWeight(.medium)
+                                }
+                                .frame(maxWidth: .infinity)
+                                .padding(.vertical, 14)
+                                .foregroundColor(.white)
+                                .background(Color.blue)
+                                .cornerRadius(12)
+                            }
+                        }
+                        .padding(.vertical, 20)
+                        .padding(.horizontal, 16)
+                    }
                     
                     // About section
                     SettingsCard {
