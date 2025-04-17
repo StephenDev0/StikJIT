@@ -72,11 +72,6 @@
         "entitlements": [],
         "privacy": {}
       },
-      "version": "1.3.2",
-      "versionDate": "2025-04-17",
-      "versionDescription": "What's Changed\r\n* Add check if 17.4+ is installed by @C4ndyF1sh in https://github.com/0-Blu/StikJIT/pull/128\r\n* Actually fix the -17 error by @0-Blu \r \nFull Changelog: https://github.com/0-Blu/StikJIT/compare/1.3.1...1.3.2",
-      "downloadURL": "https://github.com/0-Blu/StikJIT/releases/download/1.3.2/StikJIT_1.3.2.ipa",
-      "size": 6211946
     }
   ],
   "news": [
