@@ -662,7 +662,7 @@ struct LoadingView: View {
                         
                         // Specific build check for iOS 18.4 beta 1
                         alertTitle = "Unsupported OS Version"
-                        alertMessage = "StikJIT does not support iOS 18.4 beta 1 (22E5200)."
+                        alertMessage = "StikJIT does not support iOS/iPadOS 18.4 beta 1 (22E5200)."
                         showAlert = true
                     }
                 }
