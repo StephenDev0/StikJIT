@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: StikJIT Discussions
+    url: https://github.com/0-Blu/StikJIT/discussions
+    about: For questions or help, please use the discussions area instead of opening an issue.
+  - name: Discord Community
+    url: https://discord.gg/ZnNcrRT3M8
+    about: Join our Discord server for quick help and community support. 

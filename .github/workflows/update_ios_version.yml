@@ -1,0 +1,182 @@
+name: Update iOS Version in README
+
+on:
+  schedule:
+    - cron: '0 0 * * *'  # Run daily at midnight
+  workflow_dispatch:  # Allow manual triggering
+
+permissions:
+  contents: write
+
+jobs:
+  update-ios-version:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          ref: main
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.x'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install requests
+
+      - name: Update iOS version in README
+        id: update_readme
+        run: |
+          python - <<EOF
+          import re
+          import requests
+
+          def get_latest_ios_version():
+              # Function to parse the version formats into a comparable format
+              def parse_version(v):
+                  # Split into main and suffix (e.g., "11.2.4b3" or "11.2.4rc2")
+                  match = re.match(r'^([\d\.]+)(b\d+|rc\d+)?$', v)
+                  if not match:
+                      return [0, 0, 0, 0, 0]  # Default for unparseable versions
+                  
+                  main = match.group(1)
+                  suffix = match.group(2) or ''
+                  
+                  # Convert version parts to integers, suffix stays string for now
+                  parts = [int(p) for p in main.split('.')]
+                  # Pad with zeros if needed
+                  while len(parts) < 3:
+                      parts.append(0)
+
+                  if suffix.startswith('b'):
+                      # Beta versions come before RCs and finals
+                      parts.append(-2)
+                      parts.append(int(suffix[1:]))  # remove 'b' and convert to int
+                  elif suffix.startswith('rc'):
+                      # RC versions come after betas but before final
+                      parts.append(-1)
+                      parts.append(int(suffix[2:]))  # remove 'rc' and convert to int
+                  else:
+                      # Final releases come after all betas and RCs
+                      parts.append(0)  # no suffix is considered highest
+                      parts.append(0)
+
+                  return parts
+              
+              try:
+                  # Fetch data from the AppleDB API
+                  url = "https://api.appledb.dev/ios/iOS/main.json"
+                  response = requests.get(url, timeout=10)
+                  data = response.json()
+
+                  # Initialize variable to track latest iOS version
+                  latest_ios = None
+                  latest_version_parts = None
+
+                  # Loop through all releases
+                  for version_info in data:
+                      try:
+                          # Only consider iOS 18+ versions
+                          if not version_info.get('version', '').startswith('18'):
+                              continue
+                              
+                          # Consistent beta/RC formatting
+                          name = version_info['version'].replace(" beta ", "b").replace(" beta", "b1").replace(" RC ", "rc").replace(" RC", "rc1")
+                          
+                          # Filter out Simulator releases and Rapid-Security-Response updates
+                          if "Simulator" in name or "(" in name:
+                              continue
+                              
+                          version_parts = parse_version(name)
+                          
+                          # Check if this version is newer than our current latest
+                          if latest_version_parts is None or version_parts > latest_version_parts:
+                              latest_ios = version_info
+                              latest_version_parts = version_parts
+                              latest_ios['compact_name'] = name
+                      except Exception as e:
+                          print(f"Error processing version entry: {e}")
+                          continue
+
+                  if latest_ios:
+                      print(f"Latest iOS version from AppleDB: {latest_ios['compact_name']}")
+                      return latest_ios['compact_name']
+                  else:
+                      print("No iOS 18+ versions found, using fallback")
+                      return "18.5b2"  # Default fallback
+                      
+              except Exception as e:
+                  print(f"Error fetching iOS version from AppleDB: {e}")
+                  
+                  # Try ipsw.me API as a backup
+                  try:
+                      print("Trying ipsw.me API as backup...")
+                      url = "https://api.ipsw.me/v4/releases"
+                      response = requests.get(url, timeout=10)
+                      releases = response.json()
+                      
+                      # Find latest iOS 18+ version
+                      latest_version = None
+                      latest_version_parts = None
+                      
+                      for release in releases:
+                          if release.get('version', '').startswith('18'):
+                              version = release['version']
+                              # Format beta versions if present
+                              if 'beta' in release.get('tags', []):
+                                  beta_num = next((tag for tag in release.get('tags', []) if tag.startswith('beta')), 'beta1')
+                                  beta_num = beta_num.replace('beta', '')
+                                  version = f"{version}b{beta_num}"
+                              
+                              version_parts = parse_version(version)
+                              if latest_version_parts is None or version_parts > latest_version_parts:
+                                  latest_version = version
+                                  latest_version_parts = version_parts
+                      
+                      if latest_version:
+                          print(f"Latest iOS version from ipsw.me: {latest_version}")
+                          return latest_version
+                          
+                  except Exception as backup_e:
+                      print(f"Error fetching from backup source: {backup_e}")
+                  
+                  return "18.5b2"  # Default fallback if all sources fail
+
+          # Read the README.md file
+          with open('README.md', 'r') as file:
+              content = file.read()
+
+          # Get the latest iOS version
+          latest_version = get_latest_ios_version()
+          print(f"Latest iOS version detected: {latest_version}")
+
+          # Update the version range in the README 
+          updated_content = re.sub(
+              r'An on-device JIT enabler for iOS versions 17\.4\+ \(17\.4-[^)]+\)\)+',
+              f'An on-device JIT enabler for iOS versions 17.4+ (17.4-{latest_version} (latest))',
+              content
+          )
+
+          # Check if there was an actual change
+          if content != updated_content:
+              # Write the updated content back to the README
+              with open('README.md', 'w') as file:
+                  file.write(updated_content)
+              print("::set-output name=changes::true")
+          else:
+              print("No changes needed to README")
+              print("::set-output name=changes::false")
+          EOF
+
+      - name: Commit and push if there are changes
+        if: steps.update_readme.outputs.changes == 'true'
+        run: |
+          git config --global user.name 'GitHub Action'
+          git config --global user.email 'action@github.com'
+          git add README.md
+          git commit -m "Update iOS version range in README [skip ci]"
+          git push origin main 

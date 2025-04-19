@@ -1,0 +1,36 @@
+name: Bug Report
+description: Report a bug or something that's not working as expected
+labels: [bug]
+body:
+  - type: input
+    id: version
+    attributes:
+      label: iOS Version
+      description: What iOS version are you running?
+      placeholder: iOS 17.4.1
+    validations:
+      required: true
+  - type: input
+    id: stikjit_version
+    attributes:
+      label: StikJIT Version
+      description: What version of StikJIT are you using?
+      placeholder: 1.3.2
+    validations:
+      required: true
+  - type: textarea
+    id: detailed-description
+    attributes:
+      label: Describe the bug
+      description: What happened? What did you expect to happen?
+      placeholder: StikJIT crashes when I try to enable JIT for an app. I get this error code when trying to do this.. etc
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: Relevant logs or screenshots
+      description: If applicable, please add screenshots or logs/screenshots to help explain your problem
+      placeholder: Paste any relevant logs here
+    validations:
+      required: false

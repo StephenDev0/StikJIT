@@ -5,7 +5,7 @@
 
 <div align="center">
   <h1><b>StikJIT</b></h1>
-  <p><i> An on-device JIT enabler for iOS versions 17.4+ (17.4-18.5b1 (latest)), excluding iOS 18.4 beta 1 (22E5200), powered by <a href="https://github.com/jkcoxson/idevice">idevice</a> </i></p>
+  <p><i> An on-device JIT enabler for iOS versions 17.4+ (17.4-18.5b2 (latest)), excluding iOS 18.4 beta 1 (22E5200), powered by <a href="https://github.com/jkcoxson/idevice">idevice</a> </i></p>
 </div>
 <h6 align="center">
 
@@ -44,6 +44,17 @@
 
 ## Installation Guide
 For detailed installation instructions, including setup with SideStore, AltStore, or Altstore PAL (EU), please refer to our [User Manual](user-manual.md).
+
+<h1 align="center">
+<a href="https://tinyurl.com/AltstorePALStikJIT"><img src="/assets/downloadimages/AltstorePAL.png" height="60"></a>
+&nbsp;
+<a href="https://tinyurl.com/AltstoreStikJIT"><img src="/assets/downloadimages/AddtoAltstore.png" height="60"></a>
+&nbsp;
+<a href="https://github.com/0-Blu/StikJIT/releases/download/1.3.2/StikJIT_1.3.2.ipa"><img src="/assets/downloadimages/downloadipa.png" height="60"></a>
+&nbsp;
+<a href="https://raw.githubusercontent.com/0-Blu/StikJIT/main/repo.json"><img src="/assets/downloadimages/repo.png" height="60"></a>
+&nbsp;
+</h1>
 
 ## Building  
 
