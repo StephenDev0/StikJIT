@@ -39,7 +39,7 @@ struct SettingsView: View {
 
     // Developer profile image URLs 
     private let developerProfiles: [String: String] = [
-        "Stephen": "https://github.com/0-Blu.png",
+        "Stephen": "https://github.com/StephenDev0.png",
         "jkcoxson": "https://github.com/jkcoxson.png",
         "Stossy11": "https://github.com/Stossy11.png",
         "Neo": "https://github.com/neoarz.png",
@@ -321,7 +321,7 @@ struct SettingsView: View {
                                     .background(Color(UIColor.tertiarySystemBackground))
                                     .cornerRadius(12)
                                     .onTapGesture {
-                                        if let url = URL(string: "https://github.com/0-Blu") {
+                                        if let url = URL(string: "https://github.com/StephenDev0") {
                                             UIApplication.shared.open(url)
                                         }
                                     }

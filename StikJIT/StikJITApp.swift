@@ -253,6 +253,19 @@ struct HeartbeatApp: App {
                 // Pass bindings to LoadingView for alert handling and version check.
                 LoadingView(showAlert: $show_alert, alertTitle: $alert_title, alertMessage: $alert_string)
                     .onAppear {
+                        let fileManager = FileManager.default
+                        for (index, urlString) in urls.enumerated() {
+                            let destinationURL = URL.documentsDirectory.appendingPathComponent(outputFiles[index])
+                            if !fileManager.fileExists(atPath: destinationURL.path) {
+                                downloadFile(from: urlString, to: destinationURL) { result in
+                                    if (result != "") {
+                                        showAlert(title: "Error", message: "[Download DDI Error]: \(result)", showOk: true) { _ in
+                                            exit(0)
+                                        }
+                                    }
+                                }
+                            }
+                        }
                         dnsChecker.checkDNS()
                         
                         startProxy() { result, error in
@@ -323,19 +336,6 @@ struct HeartbeatApp: App {
                 MainTabView()
                     .onAppear {
                         applyTheme()
-                        let fileManager = FileManager.default
-                        for (index, urlString) in urls.enumerated() {
-                            let destinationURL = URL.documentsDirectory.appendingPathComponent(outputFiles[index])
-                            if !fileManager.fileExists(atPath: destinationURL.path) {
-                                downloadFile(from: urlString, to: destinationURL) { result in
-                                    if (result != "") {
-                                        alert_title = "An Error has Occurred"
-                                        alert_string = "[Download DDI Error]: " + result
-                                        show_alert = true
-                                    }
-                                }
-                            }
-                        }
                     }
                     .overlay(
                         ZStack {

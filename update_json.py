@@ -140,11 +140,11 @@ def update_json_file(json_file, latest_release):
         "caption": f"Update of StikJIT just got released!",
         "date": latest_release["published_at"],
         "identifier": news_identifier,
-        "imageURL": "https://github.com/0-Blu/StikJIT/blob/main/assets/StikJIT.png?raw=true",
+        "imageURL": "https://github.com/StephenDev0/StikJIT/blob/main/assets/StikJIT.png?raw=true",
         "notify": True,
         "tintColor": "#293B45",
         "title": f"{full_version} - StikJIT {date_string}",
-        "url": f"https://github.com/0-Blu/StikJIT/releases/tag/{tag}"
+        "url": f"https://github.com/StephenDev0/StikJIT/releases/tag/{tag}"
     }
 
     news_entry_exists = any(item["identifier"] == news_identifier for item in data["news"])
@@ -166,7 +166,7 @@ def update_json_file(json_file, latest_release):
 
 def main():
     # Use the original repository instead of fork
-    repo_url = "0-Blu/StikJIT"
+    repo_url = "StephenDev0/StikJIT"
     json_file = "repo.json"
 
     print(f"Using repository: {repo_url}")
