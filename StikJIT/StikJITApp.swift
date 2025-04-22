@@ -650,7 +650,7 @@ struct LoadingView: View {
                     if os.majorVersion < 17 || (os.majorVersion == 17 && os.minorVersion < 4) {
                         // Minimum version check
                         alertTitle = "Unsupported OS Version"
-                        alertMessage = "StikJIT only supports 17.4 and above except iOS/iPadOS 18.4 beta 1 (22E5200), your device is running iOS/iPadOS \(os.majorVersion).\(os.minorVersion).\(os.patchVersion)"
+                        alertMessage = "StikJIT only supports 17.4 and above except iOS/iPadOS 18.4 beta 1 (22E5200s), your device is running iOS/iPadOS \(os.majorVersion).\(os.minorVersion).\(os.patchVersion)"
                         showAlert = true
                     } else if let build = ProcessInfo.processInfo.operatingSystemVersionString
                         .split(separator: ")")
@@ -658,11 +658,11 @@ struct LoadingView: View {
                         .split(separator: "(")
                         .last?
                         .replacingOccurrences(of: "Build ", with: ""),
-                        build == "22E5200" {
+                        build == "22E5200s" {
                         
                         // Specific build check for iOS 18.4 beta 1
                         alertTitle = "Unsupported OS Version"
-                        alertMessage = "StikJIT only supports 17.4 and above except iOS/iPadOS 18.4 beta 1 (22E5200), your device is running iOS/iPadOS \(os.majorVersion).\(os.minorVersion).\(os.patchVersion) (22E5200)"
+                        alertMessage = "StikJIT only supports 17.4 and above except iOS/iPadOS 18.4 beta 1 (22E5200s), your device is running iOS/iPadOS \(os.majorVersion).\(os.minorVersion).\(os.patchVersion) (22E5200s)"
                         showAlert = true
                     }
                 }
