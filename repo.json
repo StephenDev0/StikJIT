@@ -5,8 +5,8 @@
   "subtitle": "AltStore/SideStore Source compatible repository for StikJIT.",
   "description": "An on-device JIT enabler for iOS versions 17.4+ (excluding iOS 18.4 beta 1), powered by idevice.",
   "tintColor": "#293B45",
-  "iconURL": "https://github.com/0-Blu/StikJIT/blob/main/assets/StikJIT.png?raw=true",
-  "headerURL": "https://github.com/0-Blu/StikJIT/blob/main/assets/StikJIT.png?raw=true",
+  "iconURL": "https://github.com/StephenDev0/StikJIT/blob/main/assets/StikJIT.png?raw=true",
+  "headerURL": "https://github.com/StephenDev0/StikJIT/blob/main/assets/StikJIT.png?raw=true",
   "apps": [
     {
       "name": "StikJIT",
@@ -15,16 +15,16 @@
       "subtitle": "An on-device JIT enabler for iOS versions 17.4+ (excluding iOS 18.4 beta 1), powered by idevice.",
       "version": "1.3.2",
       "versionDate": "2025-04-17",
-      "versionDescription": "What's Changed\r\n* Add check if 17.4+ is installed by @C4ndyF1sh in https://github.com/0-Blu/StikJIT/pull/128\r\n* Actually fix the -17 error by @0-Blu \r \nFull Changelog: https://github.com/0-Blu/StikJIT/compare/1.3.1...1.3.2",
-      "downloadURL": "https://github.com/0-Blu/StikJIT/releases/download/1.3.2/StikJIT_1.3.2.ipa",
+      "versionDescription": "What's Changed\r\n* Add check if 17.4+ is installed by @C4ndyF1sh in https://github.com/StephenDev0/StikJIT/pull/128\r\n* Actually fix the -17 error by @StephenDev0 \r \nFull Changelog: https://github.com/StephenDev0/StikJIT/compare/1.3.1...1.3.2",
+      "downloadURL": "https://github.com/StephenDev0/StikJIT/releases/download/1.3.2/StikJIT_1.3.2.ipa",
       "localizedDescription": "Enable JIT capabilities for your sideloaded apps.",
-      "iconURL": "https://github.com/0-Blu/StikJIT/blob/main/assets/StikJIT.png?raw=true",
+      "iconURL": "https://github.com/StephenDev0/StikJIT/blob/main/assets/StikJIT.png?raw=true",
       "tintColor": "#293B45",
       "size": 6211946,
       "screenshotURLs": [
-        "https://github.com/0-Blu/StikJIT/blob/main/assets/views/dark/HomeScreen.PNG?raw=true",
-        "https://github.com/0-Blu/StikJIT/blob/main/assets/views/dark/AppsList.PNG?raw=true",
-        "https://github.com/0-Blu/StikJIT/blob/main/assets/views/dark/Settings.PNG?raw=true"
+        "https://github.com/StephenDev0/StikJIT/blob/main/assets/views/dark/HomeScreen.PNG?raw=true",
+        "https://github.com/StephenDev0/StikJIT/blob/main/assets/views/dark/AppsList.PNG?raw=true",
+        "https://github.com/StephenDev0/StikJIT/blob/main/assets/views/dark/Settings.PNG?raw=true"
       ],
       "appPermissions": {
         "entitlements": [],
@@ -34,8 +34,8 @@
         {
           "version": "1.3.2",
           "date": "2025-04-17",
-          "localizedDescription": "What's Changed\r\n* Add check if 17.4+ is installed by @C4ndyF1sh in https://github.com/0-Blu/StikJIT/pull/128\r\n* Actually fix the -17 error by @0-Blu \r \nFull Changelog: https://github.com/0-Blu/StikJIT/compare/1.3.1...1.3.2",
-          "downloadURL": "https://github.com/0-Blu/StikJIT/releases/download/1.3.2/StikJIT_1.3.2.ipa",
+          "localizedDescription": "What's Changed\r\n* Add check if 17.4+ is installed by @C4ndyF1sh in https://github.com/StephenDev0/StikJIT/pull/128\r\n* Actually fix the -17 error by @StephenDev0 \r \nFull Changelog: https://github.com/StephenDev0/StikJIT/compare/1.3.1...1.3.2",
+          "downloadURL": "https://github.com/StephenDev0/StikJIT/releases/download/1.3.2/StikJIT_1.3.2.ipa",
           "size": 6211946,
           "minOSVersion": "17.4"
         },
@@ -88,11 +88,11 @@
       "caption": "Update of StikJIT just got released!",
       "date": "2025-04-17T05:06:07Z",
       "identifier": "release-1.3.2",
-      "imageURL": "https://github.com/0-Blu/StikJIT/blob/main/assets/StikJIT.png?raw=true",
+      "imageURL": "https://github.com/StephenDev0/StikJIT/blob/main/assets/StikJIT.png?raw=true",
       "notify": true,
       "tintColor": "#293B45",
       "title": "1.3.2 - StikJIT 17/04/25",
-      "url": "https://github.com/0-Blu/StikJIT/releases/tag/1.3.2"
+      "url": "https://github.com/StephenDev0/StikJIT/releases/tag/1.3.2"
     }
   ]
 }
