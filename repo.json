@@ -1,7 +1,8 @@
 {
   "name": "StikJIT Repository",
   "identifier": "com.stik.sj",
-  "subtitle": "AltStore/SideStore compatible source repository for StikJIT.",
+  "website": "stikdebug.xyz",
+  "subtitle": "AltStore/SideStore Source compatible repository for StikJIT.",
   "description": "An on-device JIT enabler for iOS versions 17.4+ (excluding iOS 18.4 beta 1), powered by idevice.",
   "tintColor": "#293B45",
   "iconURL": "https://github.com/0-Blu/StikJIT/blob/main/assets/StikJIT.png?raw=true",
