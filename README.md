@@ -17,17 +17,17 @@
   <a href="https://discord.gg/ZnNcrRT3M8">
     <img src="https://img.shields.io/badge/Discord-join%20us-7289DA?logo=discord&logoColor=white&style=for-the-badge&labelColor=23272A" />
   </a>
-  <a href="https://github.com/0-Blu/StikJIT/blob/main/LICENSE">
-    <img src="https://img.shields.io/github/license/0-Blu/StikJIT?label=License&color=5865F2&style=for-the-badge&labelColor=23272A" />
+  <a href="https://github.com/StephenDev0/StikJIT/blob/main/LICENSE">
+    <img src="https://img.shields.io/github/license/StephenDev0/StikJIT?label=License&color=5865F2&style=for-the-badge&labelColor=23272A" />
   </a>
-  <a href="https://github.com/0-Blu/StikJIT/releases">
-    <img src="https://img.shields.io/github/v/release/0-Blu/StikJIT?include_prereleases&label=Release&color=57F287&style=for-the-badge&labelColor=23272A" />
+  <a href="https://github.com/StephenDev0/StikJIT/releases">
+    <img src="https://img.shields.io/github/v/release/StephenDev0/StikJIT?include_prereleases&label=Release&color=57F287&style=for-the-badge&labelColor=23272A" />
   </a>
-  <a href="https://github.com/0-Blu/StikJIT/releases">
-    <img src="https://img.shields.io/github/downloads/0-Blu/StikJIT/total?label=Downloads&color=ED4245&style=for-the-badge&labelColor=23272A" />
+  <a href="https://github.com/StephenDev0/StikJIT/releases">
+    <img src="https://img.shields.io/github/downloads/StephenDev0/StikJIT/total?label=Downloads&color=ED4245&style=for-the-badge&labelColor=23272A" />
   </a>
-  <a href="https://github.com/0-Blu/StikJIT/stargazers">
-    <img src="https://img.shields.io/github/stars/0-Blu/StikJIT?label=Stars&color=FEE75C&style=for-the-badge&labelColor=23272A" />
+  <a href="https://github.com/StephenDev0/StikJIT/stargazers">
+    <img src="https://img.shields.io/github/stars/StephenDev0/StikJIT?label=Stars&color=FEE75C&style=for-the-badge&labelColor=23272A" />
   </a>
   <br />
 </h6>
@@ -46,13 +46,15 @@
 For detailed installation instructions, including setup with SideStore, AltStore, or Altstore PAL (EU), please refer to our [User Manual](user-manual.md).
 
 <h1 align="center">
-<a href="https://tinyurl.com/AltstorePALStikJIT"><img src="/assets/downloadimages/AltstorePAL.png" height="60"></a>
+<a href="https://tinyurl.com/SideStoreStikJIT"><img src="/assets/downloadimages/AddtoSidestore.png" height="60"></a>
 &nbsp;
 <a href="https://tinyurl.com/AltstoreStikJIT"><img src="/assets/downloadimages/AddtoAltstore.png" height="60"></a>
 &nbsp;
-<a href="https://github.com/0-Blu/StikJIT/releases/download/1.3.2/StikJIT_1.3.2.ipa"><img src="/assets/downloadimages/downloadipa.png" height="60"></a>
+<a href="https://tinyurl.com/AltstorePALStikJIT"><img src="/assets/downloadimages/AltstorePAL.png" height="60"></a>
 &nbsp;
-<a href="https://raw.githubusercontent.com/0-Blu/StikJIT/main/repo.json"><img src="/assets/downloadimages/repo.png" height="60"></a>
+<a href="https://github.com/StephenDev0/StikJIT/releases/download/1.3.2/StikJIT_1.3.2.ipa"><img src="/assets/downloadimages/downloadipa.png" height="60"></a>
+&nbsp;
+<a href="https://raw.githubusercontent.com/StephenDev0/StikJIT/main/repo.json"><img src="/assets/downloadimages/repo.png" height="60"></a>
 &nbsp;
 </h1>
 
@@ -60,7 +62,7 @@ For detailed installation instructions, including setup with SideStore, AltStore
 
 1. **Clone the repository:**  
    ```sh
-   git clone https://github.com/0-Blu/StikJIT.git
+   git clone https://github.com/StephenDev0/StikJIT.git
    cd StikJIT
    ```
 
@@ -86,7 +88,7 @@ For detailed installation instructions, including setup with SideStore, AltStore
 1. **Set up your development environment:**
    ```sh
    # Clone the repository
-   git clone https://github.com/0-Blu/StikJIT.git
+   git clone https://github.com/StephenDev0/StikJIT.git
    cd StikJIT
 
    # Open in Xcode
