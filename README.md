@@ -38,7 +38,7 @@
 ## Features  
 - On-device Just-In-Time (JIT) compilation for supported apps via [`idevice`](https://github.com/jkcoxson/idevice).  
 - Seamless integration with [`em_proxy`](https://github.com/SideStore/em_proxy).  
-   - Note: em_proxy isn't needed for StosVPN, its only kept for backwards compatibility with WireGuard
+   - Note: em_proxy isn't required for StosVPN, it is only kept for backwards compatibility with WireGuard
 - Native UI for managing JIT-enabling.  
 - No data collection—ensuring full privacy. 
 
