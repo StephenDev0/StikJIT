@@ -8,7 +8,7 @@ Downloads for Jitterbug Pair can be found [here.](https://github.com/osy/Jitterb
 ### For Windows
 
 1. **Extract** `Jitterbugpair-win64.zip`.
-2. **Set a passcode** for your device if you haven't already. Unlock your device, connect it to your computer via cable. If a prompt appears: tap "Trust."
+2. **Set a passcode** for your device if you haven't already. Unlock your device and connect it to your computer via cable. When a prompt appears: tap "Trust."
 3. Open your device to the homescreen.
 4. In File Explorer, locate `jitterbugpair.exe` and run it by double-clicking or right-clicking and selecting "Open".
 5. JitterbugPair will generate a **pairing file** in the same folder. This file will have the extension `.mobiledevicepairing`.
@@ -19,10 +19,10 @@ Downloads for Jitterbug Pair can be found [here.](https://github.com/osy/Jitterb
 ### For macOS
 
 1. **Extract** `Jitterbugpair-macos.zip`.
-2. **Set a passcode** for your device if you haven't already. Unlock your device, connect it to your computer via cable. If a prompt appears: tap "Trust."
+2. **Set a passcode** for your device if you haven't already. Unlock your device and connect it to your computer via cable. When a prompt appears: tap "Trust."
 3. Open your device to the homescreen.
 4. Execute `JitterBugPair` by double-clicking or right-clicking and selecting "Open".
-5. JitterBugPair will generate a **pairing file** with the extension `.mobiledevicepairing`.
+5. JitterBugPair will generate a **pairing file** with the extension `.mobiledevicepairing` to your library folder.
 6. **Transfer the pairing file** to your iOS device using AirDrop, iCloud/One/Google Drive, email, or any other method. For best results, compress the file into a .zip folder first.
 
 ---
@@ -48,15 +48,15 @@ This document outlines the installation process for StikJIT, both with and witho
 
 ## Installation with SideStore or AltStore Classic
 
-1. **Install SideStore of AltStore:**  
+1. **Install SideStore or AltStore Classic:**  
    Visit the [SideStore](https://sidestore.io/#get-started) or [AltStore](https://altstore.io) website and follow the provided installation instructions.
 
 2. **Install StosVPN:**  
    It is recommended to install [StosVPN](https://apps.apple.com/us/app/stosvpn/id6744003051).
 3. **Obtain the StikJIT IPA:**  
-   Download the StikJIT IPA from [StikJIT](https://github.com/0-Blu/StikJIT/releases/latest).
+   Download the StikJIT IPA from [StikJIT](https://github.com/0-Blu/StikJIT/releases/latest). Alternatively, you can add the AltStore or SideStore source from the ReadMe.
 
-4. **Install via SideStore:**  
+4. **Install via SideStore or AltStore Classic:**  
    Use SideStore or AltStore to install the downloaded IPA. Once the installation is complete, the process is finished.
 
 ## Installation with AltStore PAL (EU Only)
@@ -72,7 +72,7 @@ This document outlines the installation process for StikJIT, both with and witho
 
 ## Installation without SideStore or AltStore
 
-If you prefer not to use SideStore, alternative methods such as Sideloadly or AltStore are available.
+If you prefer not to use SideStore, alternative methods such as Sideloadly are available.
 
 1. **Download the StikJIT IPA:**  
    Obtain the IPA from [StikJIT](https://github.com/0-Blu/StikJIT/releases/latest).
@@ -109,7 +109,7 @@ If you prefer not to use SideStore, alternative methods such as Sideloadly or Al
 
 - **Issue:** StikJIT is frequently updated with bug fixes.
 - **Recommendation:**  
-  Reinstall the latest IPA every 1–2 days to ensure optimal performance.  
+  Reinstall the latest IPA every 1–2 days to ensure optimal performance.  Alternatively- add the AltStore/SideStore source repository (found in the ReadMe).
 
 ## Frequently Asked Questions
 
