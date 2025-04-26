@@ -8,7 +8,7 @@ Downloads for Jitterbug Pair can be found [here.](https://github.com/osy/Jitterb
 ### For Windows
 
 1. **Extract** `Jitterbugpair-win64.zip`.
-2. **Set a passcode** for your device if you haven't already. Unlock your device and connect it to your computer via cable. When a prompt appears: tap "Trust."
+2. **Set a passcode** for your device if you haven't already. Unlock your device and connect it to your computer via cable. When a prompt appears, tap "Trust."
 3. Open your device to the homescreen.
 4. In File Explorer, locate `jitterbugpair.exe` and run it by double-clicking or right-clicking and selecting "Open".
 5. JitterbugPair will generate a **pairing file** in the same folder. This file will have the extension `.mobiledevicepairing`.
@@ -19,10 +19,10 @@ Downloads for Jitterbug Pair can be found [here.](https://github.com/osy/Jitterb
 ### For macOS
 
 1. **Extract** `Jitterbugpair-macos.zip`.
-2. **Set a passcode** for your device if you haven't already. Unlock your device and connect it to your computer via cable. When a prompt appears: tap "Trust."
+2. **Set a passcode** for your device if you haven't already. Unlock your device and connect it to your computer via cable. When a prompt appears, tap "Trust."
 3. Open your device to the homescreen.
 4. Execute `JitterBugPair` by double-clicking or right-clicking and selecting "Open".
-5. JitterBugPair will generate a **pairing file** with the extension `.mobiledevicepairing` to your library folder.
+5. JitterBugPair will generate a **pairing file** with the extension `.mobiledevicepairing` to your Home/user folder.
 6. **Transfer the pairing file** to your iOS device using AirDrop, iCloud/One/Google Drive, email, or any other method. For best results, compress the file into a .zip folder first.
 
 ---
@@ -49,7 +49,7 @@ This document outlines the installation process for StikJIT, both with and witho
 ## Installation with SideStore or AltStore Classic
 
 1. **Install SideStore or AltStore Classic:**  
-   Visit the [SideStore](https://sidestore.io/#get-started) or [AltStore](https://altstore.io) website and follow the provided installation instructions.
+   Visit the [SideStore](https://sidestore.io/#get-started) or [AltStore Classic](https://altstore.io) website and follow the provided installation instructions.
 
 2. **Install StosVPN:**  
    It is recommended to install [StosVPN](https://apps.apple.com/us/app/stosvpn/id6744003051).
@@ -81,10 +81,7 @@ If you prefer not to use SideStore, alternative methods such as Sideloadly are a
    Get the latest version of [StosVPN](https://apps.apple.com/us/app/stosvpn/id6744003051) from the AppStore.
 
 3. **Create a Pairing File:**  
-   Follow the instructions in the Pairing Guide section to generate a pairing file. Afterward, compress (zip) the pairing file.
-
-4. **Transfer the Pairing File:**  
-   Share the zipped pairing file with your device. It is recommended to email the file to yourself or upload it to a cloud service such as Google Drive or Proton Drive.
+   Follow the instructions in the Pairing Guide section to generate a pairing file. Afterward, compress and transfer (zip) the pairing file to your iDevice.
 
 ## How to Use StikJIT
 
@@ -92,7 +89,7 @@ If you prefer not to use SideStore, alternative methods such as Sideloadly are a
    Start by activating StosVPN.
 
 2. **Upload the Pairing File:**  
-   Open the StikJIT application and upload the pairing file obtained via Jitterbugpair.
+   Open the StikJIT application and upload the (unzipped) pairing file obtained via Jitterbugpair.
 
 3. **Activate JIT:**  
    Click the “Enable JIT” button and select an app from the list to activate the JIT functionality.
