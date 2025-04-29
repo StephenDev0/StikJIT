@@ -1,0 +1,100 @@
+
+<body>
+        <button onclick="getApps()" class="getAppButton">Get Apps</button>
+        <p>Apps:</pp>
+        <div class="appButtonList"></div>
+
+    <style>
+        .getAppButton {
+            font-size: 50px;
+        }
+
+        .appButtonList>* {
+            font-size: 50px;
+        }
+    </style>
+    <script>
+        async function getApps() {
+            let installationProxyHandle = await installation_proxy_connect_tcp()
+            let springboardServicesHandle = await springboard_services_connect_tcp()
+            console.log(installationProxyHandle);
+            let apps = await installation_proxy_get_apps(installationProxyHandle, "User", null)
+            console.log(apps)
+
+            let container = document.getElementsByClassName("appButtonList")[0]
+            while (container.firstChild) {
+                container.removeChild(container.lastChild);
+            }
+
+            for (let app of apps) {
+                if(app["Entitlements"]["get-task-allow"] !== true){
+                    continue
+                }
+                const wrapper = document.createElement("div");
+
+                let iconDataHandle = await springboard_services_get_icon(springboardServicesHandle, app["CFBundleIdentifier"])
+                if(iconDataHandle != -1) {
+                    let imgSize = await nsdata_get_size(iconDataHandle)
+                    console.log("imgSize = ", imgSize)
+                    let imgDataEncoded = await nsdata_read(iconDataHandle)
+                    await nsdata_free(iconDataHandle)
+                    let base64String = "data:image/png;base64," + imgDataEncoded;
+                    const img = document.createElement("img");
+                    img.src = base64String;
+                    wrapper.appendChild(img)
+                }
+
+                const button = document.createElement("button");
+                button.textContent = app['CFBundleDisplayName'];
+                button.app = app;
+                button.onclick = () => enableJIT(app);
+                wrapper.appendChild(button);
+
+
+                container.appendChild(wrapper)
+                container.appendChild(document.createTextNode(" ")); // Add space between buttons
+            }
+
+
+        }
+        
+        async function enableJIT(app) {
+            let bundleId = app['CFBundleIdentifier']
+            
+            let core_device = await core_device_proxy_connect_tcp();
+            let rsd_port = await core_device_proxy_get_server_rsd_port(core_device);
+            let core_device_adapter = await core_device_proxy_create_tcp_adapter(core_device);
+            await adapter_connect(core_device_adapter, rsd_port);
+            
+            let xpc_device = await xpc_device_new(core_device_adapter);
+            let debug_service = await xpc_device_get_service(xpc_device, "com.apple.internal.dt.remote.debugproxy");
+            let pc_service = await xpc_device_get_service(xpc_device, "com.apple.instruments.dtservicehub")
+            
+            let pc_adapter = await xpc_device_adapter_into_inner(xpc_device);
+            let pc_service_info = await xpc_device_get_info(pc_service);
+            await adapter_connect(pc_adapter, pc_service_info["port"])
+            
+            let remote_server = await remote_server_adapter_new(pc_adapter);
+            let process_control = await process_control_new(remote_server);
+            let pid = await process_control_launch_app(process_control, bundleId, null, null, true, false)
+            await process_control_disable_memory_limit(process_control, pid)
+            
+            
+            console.log("pid = " + pid)
+            console.log("pc_service_info", pc_service_info)
+            
+            let debug_service_info = await xpc_device_get_info(debug_service);
+            let debug_adapter = await remote_server_adapter_into_inner(remote_server)
+            await adapter_connect(debug_adapter, debug_service_info["port"])
+            let debug_proxy = await debug_proxy_adapter_new(debug_adapter)
+
+            let response = await debug_proxy_send_command(debug_proxy, `vAttach;${pid.toString(16)}`)
+            console.log("attach_command response = ", response)
+            let response2 = await debug_proxy_send_command(debug_proxy, "D")
+            response2 = await debug_proxy_send_command(debug_proxy, "D")
+            response2 = await debug_proxy_send_command(debug_proxy, "D")
+            response2 = await debug_proxy_send_command(debug_proxy, "D")
+            console.log("detatch_command response = ", response2)
+        }
+    </script>
+</body>

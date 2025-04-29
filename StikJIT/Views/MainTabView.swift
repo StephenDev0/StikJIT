@@ -28,6 +28,10 @@ struct MainTabView: View {
                 .tabItem {
                     Label("Settings", systemImage: "gearshape.fill")
                 }
+            RunJSView()
+                .tabItem {
+                    Label("Scripts", systemImage: "gamecontroller.fill")
+                }
         }
         .accentColor(accentColor)
         .environment(\.accentColor, accentColor)

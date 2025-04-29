@@ -88,6 +88,10 @@ JITEnableContext* sharedJITContext = nil;
     return pairingFile;
 }
 
+- (TcpProviderHandle*)getTcpProviderHandle {
+    return provider;
+}
+
 - (void)startHeartbeatWithCompletionHandler:(HeartbeatCompletionHandler)completionHandler
                                    logger:(LogFunc)logger
 {

@@ -55,7 +55,7 @@ void startHeartbeat(IdevicePairingFile* pairing_file, TcpProviderHandle** provid
     
     completion(0, "Heartbeat Completed");
     
-    u_int64_t current_interval = 15;
+    u_int64_t current_interval = 10;
     while (1) {
         if(*heartbeatSessionId != currentSessionId) {
             break;

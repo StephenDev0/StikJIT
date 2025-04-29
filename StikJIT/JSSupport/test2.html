@@ -1,0 +1,61 @@
+
+<body>
+    <p>Please input ipa's path relative to Documents folder</p>
+    <input class="ipaPath"/>
+    <button onclick="installApp()" class="installAppButton">Install App</button>
+    <div class="info"></div>
+
+<style>
+    * {
+        font-size: 30px;
+    }
+
+</style>
+<script>
+    async function installApp() {
+        let div = document.getElementsByClassName("info")[0]
+        let input = document.getElementsByClassName("ipaPath")[0]
+        let localPath = input.value
+
+        let freeList = []
+        try {
+            let file = await local_file_open(localPath, "rb")
+            let file_size = await local_file_get_size(file)
+            console.log("size = ", file_size)
+            // send the file via afc
+            let afcFilePath = "Payload.ipa"
+            let afc = await afc_client_connect_tcp()
+            let files = await afc_list_directory(afc, "")
+            if(files.findIndex(f => f === afcFilePath) != -1) {
+                await afc_remove_path(afc, afcFilePath)
+            }
+            let afcFile = await afc_file_open(afc, afcFilePath, 2)
+            let nowPos = 0
+            let i = 0
+            let chunkSize = 10485760
+            while(nowPos < file_size) {
+                let data = await local_file_read_chunk(file, nowPos, chunkSize)
+                await afc_file_write(afcFile, data)
+                await nsdata_free(data)
+                // send 10m each time
+                nowPos += chunkSize
+                i += 1
+                console.log("sending data "+ i)
+                div.innerHTML = `Sending data ${Math.min(nowPos, file_size)}/${file_size}`
+            }
+            await afc_file_close(afcFile)
+            await local_file_close(file)
+            
+            // install file
+            let installationProxyHandle = await installation_proxy_connect_tcp()
+            await installation_proxy_install(installationProxyHandle, afcFilePath, null, (progress) => {
+                console.log("Installing ... " + progress)
+                div.innerHTML = `Installing ... ${progress}%`
+            })
+        } catch(e) {
+            div.innerHTML = e
+        }
+    }
+
+</script>
+</body>

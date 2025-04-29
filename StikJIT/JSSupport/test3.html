@@ -1,0 +1,79 @@
+<body>
+    <p>Location Simulation</p>
+    <p>
+        <span>latitude</span>    
+        <input class="latitude"/>
+    </p>
+    <p>
+        <span>longitude</span>    
+        <input class="longitude"/>
+    </p>
+    <p>
+        <button onclick="spoofLocation()">Set</button>
+        <button onclick="clearLocation()">Clear</button>
+    </p>
+
+    <div class="info"></div>
+
+<style>
+    * {
+        font-size: 30px;
+    }
+
+</style>
+<script>
+    var location_simulation = -1;
+    async function connect() {
+        let core_device = await core_device_proxy_connect_tcp();
+        let rsd_port = await core_device_proxy_get_server_rsd_port(core_device);
+        let adapter = await core_device_proxy_create_tcp_adapter(core_device);
+        await adapter_connect(adapter, rsd_port);
+         
+        let xpc_device = await xpc_device_new(adapter);
+        let dvt_service = await xpc_device_get_service(xpc_device, "com.apple.instruments.dtservicehub")
+        let debug_adapter = await xpc_device_adapter_into_inner(xpc_device);
+        let location_service_info = await xpc_device_get_info(dvt_service);
+        await adapter_connect(debug_adapter, location_service_info["port"])
+
+        let remote_server = await remote_server_adapter_new(debug_adapter);
+        location_simulation = await location_simulation_new(remote_server);
+    }
+
+    async function spoofLocation() {
+        let div = document.getElementsByClassName("info")[0]
+        try {
+            let latitudeInput = document.getElementsByClassName("latitude")[0]
+            let longitudeInput = document.getElementsByClassName("longitude")[0]
+            let latitude = parseFloat(latitudeInput.value)
+            let longitude = parseFloat(longitudeInput.value)
+
+            if(location_simulation === -1) {
+                await connect();
+            }
+
+            await location_simulation_set(location_simulation, latitude, longitude);
+            div.innerHTML = "OK";
+        } catch(e) {
+            div.innerHTML = e
+        }
+
+    }
+
+    async function clearLocation() {
+        let div = document.getElementsByClassName("info")[0]
+
+        try {
+            if(location_simulation === -1) {
+                await connect();
+            }
+
+            await location_simulation_clear(location_simulation);
+            div.innerHTML = "OK";
+        } catch(e) {
+            div.innerHTML = e
+        }
+
+    }
+
+</script>
+</body>

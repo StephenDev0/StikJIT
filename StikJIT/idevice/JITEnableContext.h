@@ -19,4 +19,5 @@ typedef void (^LogFunc)(NSString *message);
 - (BOOL)debugAppWithBundleID:(NSString*)bundleID logger:(LogFunc)logger;
 - (NSDictionary<NSString*, NSString*>*)getAppListWithError:(NSError**)error;
 - (UIImage*)getAppIconWithBundleId:(NSString*)bundleId error:(NSError**)error;
+- (TcpProviderHandle*)getTcpProviderHandle;
 @end
