@@ -27,100 +27,126 @@ Downloads for Jitterbug Pair can be found [here.](https://github.com/osy/Jitterb
 
 ---
 
-### On your iOS device
-
-1. In the **Files app**, long-press your zipped pairing file and select **Uncompress**.
-2. Launch the **StikJIT or StikDebug** app.
-    - If the app doesn’t appear, restart your device.
-3. When prompted, import the **unzipped pairing file**.
-4. StikJIT or StikDebug will now be **paired** with your iDevice.
-
----
-
 ### Notes
 
 - If you **update or reset your iDevice**, the pairing file will become **invalid**, and you’ll need to repeat the pairing process.
 - To prompt StikJIT to ask for the pairing file again, go to **StikJIT > Settings** and tap **Import New Pairing File**.
 
-# How to Install StikJIT
+---
+
+# How to Install StikJIT or StikDebug
 
 This document outlines the installation process for StikJIT, both with and without SideStore, along with usage instructions, troubleshooting tips, and frequently asked questions.
 
-## Installation with SideStore or AltStore Classic
+## StikJIT installation with SideStore or AltStore Classic
 
 1. **Install SideStore or AltStore Classic:**  
    Visit the [SideStore](https://sidestore.io/#get-started) or [AltStore Classic](https://altstore.io) website and follow the provided installation instructions.
 
 2. **Install StosVPN:**  
    It is recommended to install [StosVPN](https://apps.apple.com/us/app/stosvpn/id6744003051).
-3. **Obtain the StikJIT IPA:**  
-   Add the Source for [AltStore](https://tinyurl.com/AltstoreStikJIT) or [SideStore](https://tinyurl.com/SideStoreStikJIT), or download the StikJIT IPA from [StikJIT](https://github.com/0-Blu/StikJIT/releases/latest).
+   
+4. **Obtain StikJIT:**  
+   Add the source for [SideStore](https://tinyurl.com/SideStoreStikJIT) or [AltStore](https://tinyurl.com/AltstoreStikJIT).
 
-4. **Install via SideStore or AltStore Classic:**  
-   Use SideStore or AltStore to install StikJIT. Once the installation is complete, import your pairing file to StikJIT/StikDebug.
+5. **Install via SideStore or AltStore Classic:**  
+   Use SideStore or AltStore to install StikJIT.
 
-## Installation with AltStore PAL (EU Only)
+6. **Installation procedures**
+   Follow the standard installation procedures in the usage guide below.
+
+## StikDebug installation with AltStore PAL (EU Only)
 
 1. **Install StikDebug:**  
-   Download StikDebug from AltStore PAL [here](https://tinyurl.com/AltstorePALStikJIT) and follow the standard installation procedures.
+   Install StikDebug from AltStore PAL [here](https://tinyurl.com/AltstorePALStikJIT).
 
-2. **Install AltStore Classic:**  
+2. **Installation procedures**
+   Follow the standard installation procedures in the usage guide below.
+
+4. **Install AltStore Classic:**  
    Next, install AltStore Classic via AltStore PAL. AltStore Classic will automatically detect that StikDebug is installed.
 
-3. **Enable JIT:**  
+5. **Enabling JIT:**  
    In AltStore Classic, press and hold the desired app, then select the "Enable JIT" option to activate the feature.
 
-## Installation without SideStore or AltStore
+## StikDebug installation with App Store
 
-If you prefer not to use SideStore, alternative methods such as Sideloadly are available.
+1. **Install StikDebug**
+   Install StikDebug from the App Store [here](https://apps.apple.com/us/app/stikdebug/id6744045754)
 
-1. **Download the StikJIT IPA:**  
-   Obtain the IPA from [StikJIT](https://github.com/0-Blu/StikJIT/releases/latest).
+2. **Installation procedures**
+   Follow the standard installation procedures in the usage guide below.
 
-2. **Download StosVPN:**  
+## StikJIT installation without SideStore or AltStore
+
+If you prefer not to or cannot use the App Store or SideStore/AltStore (Sources), alternative methods such as Sideloadly are available.
+
+1. **Install StosVPN:**  
    Get the latest version of [StosVPN](https://apps.apple.com/us/app/stosvpn/id6744003051) from the App Store.
+   
+2. **Download the StikJIT IPA:**  
+   Obtain the latest StikJIT IPA from [StikJIT](https://github.com/StephenDev0/StikJIT/releases/latest).
 
-3. **Create a Pairing File:**  
-   Follow the instructions in the Pairing Guide section to generate a pairing file. Afterward, compress and transfer (zip) the pairing file to your iDevice.
+3. **Alternative install:**
+   Install the downloaded IPA through your prefered method.
+   
+4. **Installation procedures**
+   Follow the standard installation procedures in the usage guide below.
 
-## How to Use StikJIT
+---
 
-1. **Enable StosVPN:**  
-   Start by activating StosVPN.
+## Usage guide
 
-2. **Upload the Pairing File:**  
-   Open the StikJIT application and upload the (unzipped) pairing file obtained via Jitterbugpair.
+### Standard installation procedures:
 
-3. **Activate JIT:**  
+1. **Pair your device:**  
+   - Follow the instructions in the Pairing Guide section to generate a pairing file. In the **Files app** on your iDevice, locate your newly-generated pairing file. (If zipped, long-press your zipped pairing file and select **Uncompress**.)
+   - When prompted, import the **unzipped pairing file**.
+   - StikJIT or StikDebug will now be **paired** with your iDevice.
+   
+2. **Enable VPN:**  
+   Start by activating StosVPN for StikJIT or the built-in VPN in StikDebug.
+
+3. **Upload the Pairing File:**  
+   When prompted, import the **unzipped pairing file** obtained via JitterBugPair.
+
+### Every time:
+
+1. **Enable VPN:**  
+   Start by activating StosVPN for StikJIT or the built-in VPN in StikDebug.
+   
+2. **Activate JIT:**  
    Click the “Enable JIT” button and select an app from the list to activate the JIT functionality.
 
-## Common Issues and Solutions
+---
 
-### Pairing File Issue -9
+# Common Issues and Solutions
+
+## Pairing File Issue -9
 
 - **Issue:** This error may occur if the pairing file has been modified or if a new pairing file was created.
 - **Solution:**  
   Generate a new pairing file using JitterBugPair and retry the process.
 
-### Keeping the IPA Up-to-Date
+## Keeping the IPA Up-to-Date
 
-- **Issue:** StikJIT is frequently updated with bug fixes.
+- **Issue:** StikJIT/StikDebug is frequently updated with bug fixes.
 - **Recommendation:**  
-  Reinstall the latest IPA every 1–2 days to ensure optimal performance.  Alternatively- add the AltStore/SideStore source repository (found in the ReadMe).
+  Check for updates in your installation store method or reinstall the latest IPA (if applicable) every 1–2 days to ensure optimal performance.
 
 ## Frequently Asked Questions
 
 - **Does this work with LiveContainer?**  
-  Yes, it functions in the same manner.
+  Yes, it can be used both standalone or inside LiveContianer.
 
 - **Do I need to be connected to Wi-Fi?**  
-The first launch requires Wi-Fi to mount the ddi. After this you can use Wi-Fi or Airplane mode.
+The first launch requires Wi-Fi to mount the DDI. After that you can use Wi-Fi or Airplane Mode.
 
 - **Can this be used with a certificate?**  
   Yes, it has to be used with a developer certificate. Distribution and enterprise certificates will **NOT** work.
 
 - **Is this open source?**  
-  Yes, the source code is available on [GitHub](https://github.com/0-Blu/StikJIT).
+  Yes, the source code is available on [GitHub](https://github.com/StephenDev0/StikJIT).
 
 - **What iOS versions are supported?**  
   Supported versions range from iOS 17.4 to iOS 18.5 Developer Beta 2 (latest version).
@@ -131,11 +157,8 @@ The first launch requires Wi-Fi to mount the ddi. After this you can use Wi-Fi o
 - **Does iOS 18.4 beta 1 work?**  
   No, Apple broke JIT in this version. You should update. 
 
-- **Will StikDebug be available on the normal App Store?**  
-  Maybe, it is unclear if Apple will allow it.
-
 - **Is WireGuard still an option, or is StosVPN required?**  
-StosVPN is required for StikJIT to work properly. It is not needed for StikDebug because the vpn is built in.
+StosVPN is required for StikJIT to work properly. It is not needed for StikDebug because the VPN is built in.
 
 # Idevice Error Codes 
 
