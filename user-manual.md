@@ -1,7 +1,7 @@
 ## Pairing Instructions
 
 ### Downloads
-Downloads for Jitterbug Pair can be found [here.](https://github.com/osy/Jitterbug/releases/tag/latest)
+Downloads for JitterbugPair can be found [here.](https://github.com/osy/Jitterbug/releases/latest)
 
 ---
 
@@ -21,8 +21,8 @@ Downloads for Jitterbug Pair can be found [here.](https://github.com/osy/Jitterb
 1. **Extract** `Jitterbugpair-macos.zip`.
 2. **Set a passcode** for your device if you haven't already. Unlock your device and connect it to your computer via cable. When a prompt appears, tap "Trust."
 3. Open your device to the homescreen.
-4. Execute `JitterBugPair` by double-clicking or right-clicking and selecting "Open".
-5. JitterBugPair will generate a **pairing file** with the extension `.mobiledevicepairing` to your user's home folder.
+4. Execute `bugpair` by double-clicking or right-clicking and selecting "Open".
+5. JitterbugPair will generate a **pairing file** with the extension `.mobiledevicepairing` to your user's home folder.
 6. **Transfer the pairing file** to your iOS device using AirDrop, iCloud/One/Google Drive, email, or any other method. For best results, compress the file into a .zip folder first.
 
 ---
@@ -108,7 +108,7 @@ If you prefer not to or cannot use the App Store or SideStore/AltStore (Sources)
    Start by activating StosVPN for StikJIT or the built-in VPN in StikDebug.
 
 3. **Upload the Pairing File:**  
-   When prompted, import the **unzipped pairing file** obtained via JitterBugPair.
+   When prompted, import the **unzipped pairing file** obtained via JitterbugPair.
 
 ### Every time:
 
@@ -126,7 +126,7 @@ If you prefer not to or cannot use the App Store or SideStore/AltStore (Sources)
 
 - **Issue:** This error may occur if the pairing file has been modified or if a new pairing file was created.
 - **Solution:**  
-  Generate a new pairing file using JitterBugPair and retry the process.
+  Generate a new pairing file using JitterbugPair and retry the process.
 
 ## Keeping the IPA Up-to-Date
 
