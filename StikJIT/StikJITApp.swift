@@ -645,15 +645,27 @@ struct LoadingView: View {
                 .shadow(color: accentColor.opacity(0.4), radius: 10, x: 0, y: 0)
                 .onAppear {
                     animate = true
-                    
-                            let os = ProcessInfo.processInfo.operatingSystemVersion
-                            if os.majorVersion < 17 || (os.majorVersion == 17 && os.minorVersion < 4) {
-                                // Show alert for unsupported host iOS version
-                                alertTitle = "Unsupported OS Version"
-                                alertMessage = "StikJIT only supports 17.4 and above. Your device is running iOS/iPadOS \(os.majorVersion).\(os.minorVersion).\(os.patchVersion)"
-                                showAlert = true
-                            }
-                        }
+
+                    let os = ProcessInfo.processInfo.operatingSystemVersion
+                    if os.majorVersion < 17 || (os.majorVersion == 17 && os.minorVersion < 4) {
+                        // Minimum version check
+                        alertTitle = "Unsupported OS Version"
+                        alertMessage = "StikJIT only supports 17.4 and above except iOS/iPadOS 18.4 beta 1 (22E5200s), your device is running iOS/iPadOS \(os.majorVersion).\(os.minorVersion).\(os.patchVersion)"
+                        showAlert = true
+                    } else if let build = ProcessInfo.processInfo.operatingSystemVersionString
+                        .split(separator: ")")
+                        .first?
+                        .split(separator: "(")
+                        .last?
+                        .replacingOccurrences(of: "Build ", with: ""),
+                        build == "22E5200s" {
+                        
+                        // Specific build check for iOS 18.4 beta 1
+                        alertTitle = "Unsupported OS Version"
+                        alertMessage = "StikJIT only supports 17.4 and above except iOS/iPadOS 18.4 beta 1 (22E5200s), your device is running iOS/iPadOS \(os.majorVersion).\(os.minorVersion).\(os.patchVersion) (22E5200s)"
+                        showAlert = true
+                    }
+                }
 
                 Text("Loading...")
                     .font(.system(size: 20, weight: .medium, design: .rounded))
@@ -665,7 +677,6 @@ struct LoadingView: View {
         }
     }
 }
-
 public func showAlert(title: String, message: String, showOk: Bool, showTryAgain: Bool = false, primaryButtonText: String? = nil, completion: @escaping (Bool) -> Void) {
     DispatchQueue.main.async {
         let rootViewController = UIApplication.shared.windows.last?.rootViewController
