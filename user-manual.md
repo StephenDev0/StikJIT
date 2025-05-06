@@ -52,7 +52,7 @@ This document outlines the installation process for StikJIT, both with and witho
 5. **Install via SideStore or AltStore Classic:**  
    Use SideStore or AltStore to install StikJIT.
 
-6. **Installation procedures**
+6. **Installation procedures:**
    Follow the standard installation procedures in the usage guide below.
 
 ## StikDebug installation with AltStore PAL (EU Only)
@@ -60,7 +60,7 @@ This document outlines the installation process for StikJIT, both with and witho
 1. **Install StikDebug:**  
    Install StikDebug from AltStore PAL [here](https://tinyurl.com/AltstorePALStikJIT).
 
-2. **Installation procedures**
+2. **Installation procedures:**
    Follow the standard installation procedures in the usage guide below.
 
 4. **Install AltStore Classic:**  
@@ -74,7 +74,7 @@ This document outlines the installation process for StikJIT, both with and witho
 1. **Install StikDebug**
    Install StikDebug from the App Store [here](https://apps.apple.com/us/app/stikdebug/id6744045754)
 
-2. **Installation procedures**
+2. **Installation procedures:**
    Follow the standard installation procedures in the usage guide below.
 
 ## StikJIT installation without SideStore or AltStore
@@ -90,7 +90,7 @@ If you prefer not to or cannot use the App Store or SideStore/AltStore (Sources)
 3. **Alternative install:**
    Install the downloaded IPA through your prefered method.
    
-4. **Installation procedures**
+4. **Installation procedures:**
    Follow the standard installation procedures in the usage guide below.
 
 ---
