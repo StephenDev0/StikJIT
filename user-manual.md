@@ -113,10 +113,10 @@ If you prefer not to or cannot use the App Store or SideStore/AltStore (Sources)
 ### Every time:
 
 1. **Enable VPN:**  
-   Start by activating StosVPN for StikJIT or the built-in VPN in StikDebug.
+   Start by activating StosVPN for StikJIT or the built-in VPN in StikDebug. If Wi-Fi is avaliable, leave it on, otherwise disable Wi-Fi and mobile data (Airplane Mode).
    
 2. **Activate JIT:**  
-   Click the “Enable JIT” button and select an app from the list to activate the JIT functionality.
+   Click the “Enable JIT” button and select an app from the list to activate the JIT functionality. 
 
 ---
 
