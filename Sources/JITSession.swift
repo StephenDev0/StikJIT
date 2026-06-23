@@ -42,7 +42,18 @@ final class JITSession {
         _ = try? sendCommand("QStartNoAckMode", over: debugProxy)
         debug_proxy_set_ack_mode(debugProxy, 0)
 
-        try ScriptRunner(targetPID: targetPID, debugProxy: debugProxy, progress: progress).run()
+        if ProcessInfo.processInfo.hasTXM {
+            try ScriptRunner(targetPID: targetPID, debugProxy: debugProxy, progress: progress).run()
+        } else {
+            try attachWithoutScript(targetPID: targetPID, debugProxy: debugProxy, progress: progress)
+        }
+    }
+
+    private func attachWithoutScript(targetPID: Int32, debugProxy: OpaquePointer, progress: (String) -> Void) throws {
+        progress("Attaching to pid \(targetPID). This device has no TXM, so the attach alone enables JIT and the script is skipped.")
+        _ = try sendCommand("vAttach;\(String(targetPID, radix: 16))", over: debugProxy)
+        _ = try? sendCommand("D", over: debugProxy)
+        progress("JIT enabled (debugger attached and detached).")
     }
 
     private func openPairingFile() throws -> OpaquePointer {
