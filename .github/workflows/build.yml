@@ -3,9 +3,13 @@ name: Build
 on:
   push:
     branches: [main]
+    tags: ['*']
   pull_request:
     branches: [main]
   workflow_dispatch:
+
+permissions:
+  contents: write
 
 jobs:
   build:
@@ -42,9 +46,19 @@ jobs:
             -framework build/StikJIT-iOS.xcarchive/Products/Library/Frameworks/StikJIT.framework \
             -output StikJIT.xcframework
 
-      - name: Upload XCFramework
+      - name: Zip XCFramework
+        run: zip -ry StikJIT.xcframework.zip StikJIT.xcframework
+
+      - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
           name: StikJIT.xcframework
-          path: StikJIT.xcframework
+          path: StikJIT.xcframework.zip
           if-no-files-found: error
+
+      - name: Create release
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: StikJIT.xcframework.zip
+          generate_release_notes: true
