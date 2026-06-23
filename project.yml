@@ -1,0 +1,49 @@
+name: StikJIT
+options:
+  bundleIdPrefix: com.stik
+  deploymentTarget:
+    iOS: "17.4"
+  createIntermediateGroups: true
+
+settings:
+  base:
+    SWIFT_VERSION: "5.0"
+    MARKETING_VERSION: "1.0.0"
+    CURRENT_PROJECT_VERSION: "1"
+    CLANG_CXX_LIBRARY: "libc++"
+
+targets:
+  StikJIT:
+    type: framework
+    platform: iOS
+    sources:
+      - path: Sources
+      - path: Resources
+        buildPhase: resources
+    dependencies:
+      - sdk: JavaScriptCore.framework
+      - sdk: Network.framework
+      - sdk: Security.framework
+      - sdk: CFNetwork.framework
+      - sdk: SystemConfiguration.framework
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.stik.StikJIT
+        PRODUCT_NAME: StikJIT
+        DEFINES_MODULE: YES
+        BUILD_LIBRARY_FOR_DISTRIBUTION: YES
+        SKIP_INSTALL: NO
+        # idevice FFI: modulemap/headers to compile `import idevice`, and force_load the
+        # static lib so all its symbols are embedded in the framework binary (self-contained).
+        SWIFT_INCLUDE_PATHS: "$(SRCROOT)/idevice"
+        HEADER_SEARCH_PATHS: "$(SRCROOT)/idevice"
+        LIBRARY_SEARCH_PATHS: "$(SRCROOT)/idevice"
+        OTHER_LDFLAGS: "-force_load $(SRCROOT)/idevice/libidevice_ffi.a"
+
+schemes:
+  StikJIT:
+    build:
+      targets:
+        StikJIT: all
+    archive:
+      config: Release

@@ -1,0 +1,19 @@
+# Build output
+build/
+DerivedData/
+
+# The framework is a build artifact — rebuild it with the steps in README.md.
+StikJIT.xcframework/
+
+# XcodeGen-generated project — run `xcodegen generate`.
+*.xcodeproj
+
+# Xcode user data
+xcuserdata/
+*.xcuserstate
+
+# OS / editor junk
+.DS_Store
+*.bak
+*.swp
+*.log
