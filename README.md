@@ -2,11 +2,13 @@
 
 An iOS XCFramework that enables JIT for another process over the device's RSD tunnel.
 
-A separate process (e.g. an app extension) attaches a debugserver to the target by PID, marks its JIT memory executable, then detaches. It is self-contained: the idevice FFI and `universal.js` are bundled inside. The target must carry have `get-task-allow` entitlement.
+JIT cannot be enabled in-process, since a process that attaches a debugger to itself deadlocks. StikJIT runs in a separate process, attaches a debugserver to the target by PID, enables JIT for it, then detaches. It is self-contained: the idevice FFI and `universal.js` are bundled inside. The target must have the `get-task-allow` entitlement.
 
 ## Use
 
-Add `StikJIT.xcframework` to your target (Embed & Sign), then call it off the main thread:
+Because it needs a separate process, you call StikJIT from a small app extension that your app launches and hands the target app's PID to (for example over XPC). StikJIT does not include that extension, its launch, or the pairing file; your app provides those.
+
+Add `StikJIT.xcframework` to the extension (Embed & Sign), then call it off the main thread:
 
 ```swift
 import StikJIT
