@@ -2,7 +2,7 @@
 
 An iOS XCFramework that enables JIT for another process over the device's RSD tunnel.
 
-A separate process (e.g. an app extension) attaches a debugserver to the target by PID, marks its JIT memory executable, then detaches. It is self-contained: the idevice FFI and `universal.js` are bundled inside. The target must carry the `get-task-allow` entitlement.
+A separate process (e.g. an app extension) attaches a debugserver to the target by PID, marks its JIT memory executable, then detaches. It is self-contained: the idevice FFI and `universal.js` are bundled inside. The target must carry have `get-task-allow` entitlement.
 
 ## Use
 
