@@ -2,7 +2,7 @@
 
 An iOS XCFramework that enables JIT for another process over the device's RSD tunnel.
 
-JIT cannot be enabled in-process, since a process that attaches a debugger to itself deadlocks. StikJIT runs in a separate process, attaches a debugserver to the target by PID, enables JIT for it, then detaches. It is self-contained: the idevice FFI and `universal.js` are bundled inside. The target must have the `get-task-allow` entitlement.
+JIT cannot be enabled in-process, since a process that attaches a debugger to itself deadlocks. StikJIT runs in a separate process, attaches a debugserver to the target by PID, enables JIT for it, then detaches. It is self-contained: the idevice FFI and its bundled JIT scripts (`universal.js`, `legacy.js`) are bundled inside. The target must have the `get-task-allow` entitlement.
 
 ## Use
 
@@ -20,7 +20,7 @@ try StikJIT.enableJIT(
 )
 ```
 
-It blocks until done and throws `StikJITError` on failure. Pass `configuration:` to override the tunnel endpoint (defaults to `10.7.0.1:49152`).
+It blocks until done and throws `StikJITError` on failure. Pass `configuration:` to override the tunnel endpoint (defaults to `10.7.0.1:49152`). Pass `script:` to select the bundled JS used to drive the JIT-enabling exchange on devices with TXM — `.universal` (default) or `.legacy` based on your app's needs.
 
 ## Build
 
@@ -35,4 +35,4 @@ xcodebuild -create-xcframework \
 
 ## License
 
-StikJIT is licensed under the MPL-2.0 (see [`LICENSE`](LICENSE)). It uses StikDebug as a reference, with the bundled [idevice](https://github.com/jkcoxson/idevice) and universal.js retaining their own licenses.
+StikJIT is licensed under the MPL-2.0 (see [`LICENSE`](LICENSE)). It uses StikDebug as a reference, with the bundled [idevice](https://github.com/jkcoxson/idevice), universal.js, and legacy.js retaining their own licenses.
