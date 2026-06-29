@@ -15,7 +15,7 @@ public enum StikJITError: Error, LocalizedError {
         case .pairingFile(let detail):
             return "Pairing file error: \(detail)."
         case .scriptUnavailable:
-            return "The bundled universal.js could not be loaded from the StikJIT framework."
+            return "The bundled JIT script could not be loaded from the StikJIT framework."
         case .debugProxyUnavailable:
             return "Failed to establish a debugserver connection to the target process."
         case .device(let code, let subCode, let message):

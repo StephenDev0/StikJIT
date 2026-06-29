@@ -29,7 +29,7 @@ final class JITSession {
         self.configuration = configuration
     }
 
-    func enableJIT(targetPID: Int32, progress: @escaping (String) -> Void) throws {
+    func enableJIT(targetPID: Int32, script: StikJIT.Script, progress: @escaping (String) -> Void) throws {
         let tunnel = try makeTunnel()
         defer { tunnel.free() }
 
@@ -43,7 +43,7 @@ final class JITSession {
         debug_proxy_set_ack_mode(debugProxy, 0)
 
         if ProcessInfo.processInfo.hasTXM {
-            try ScriptRunner(targetPID: targetPID, debugProxy: debugProxy, progress: progress).run()
+            try ScriptRunner(targetPID: targetPID, debugProxy: debugProxy, script: script, progress: progress).run()
         } else {
             try attachWithoutScript(targetPID: targetPID, debugProxy: debugProxy, progress: progress)
         }

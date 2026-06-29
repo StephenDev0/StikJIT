@@ -8,17 +8,19 @@ final class ScriptRunner {
 
     private let targetPID: Int32
     private let debugProxy: OpaquePointer
+    private let script: StikJIT.Script
     private let progress: (String) -> Void
     private var context: JSContext?
 
-    init(targetPID: Int32, debugProxy: OpaquePointer, progress: @escaping (String) -> Void) {
+    init(targetPID: Int32, debugProxy: OpaquePointer, script: StikJIT.Script, progress: @escaping (String) -> Void) {
         self.targetPID = targetPID
         self.debugProxy = debugProxy
+        self.script = script
         self.progress = progress
     }
 
     func run() throws {
-        let source = try BundledScript.universalJS()
+        let source = try BundledScript.source(for: script)
 
         guard let context = JSContext() else { throw StikJITError.scriptUnavailable }
         self.context = context
@@ -45,7 +47,7 @@ final class ScriptRunner {
         context.setObject(prepare, forKeyedSubscript: "prepare_memory_region" as NSString)
         context.setObject(log,     forKeyedSubscript: "log" as NSString)
 
-        progress("Running universal.js against pid \(targetPID)…")
+        progress("Running \(script.resourceName).js against pid \(targetPID)…")
         context.evaluateScript(source)
         progress("JIT script finished (region blessed, detached).")
     }

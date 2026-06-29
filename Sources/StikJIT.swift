@@ -2,6 +2,20 @@ import Foundation
 
 public enum StikJIT {
 
+    public enum Script: Sendable {
+
+        case universal
+
+        case legacy
+
+        var resourceName: String {
+            switch self {
+            case .universal: return "universal"
+            case .legacy: return "legacy"
+            }
+        }
+    }
+
     public struct Configuration: Sendable {
 
         public var deviceAddress: String
@@ -19,8 +33,9 @@ public enum StikJIT {
     public static func enableJIT(targetPID: Int32,
                                  pairingFile: URL,
                                  configuration: Configuration = .default,
+                                 script: Script = .universal,
                                  progress: @escaping (String) -> Void = { _ in }) throws {
         let session = JITSession(pairingFilePath: pairingFile.path, configuration: configuration)
-        try session.enableJIT(targetPID: targetPID, progress: progress)
+        try session.enableJIT(targetPID: targetPID, script: script, progress: progress)
     }
 }
