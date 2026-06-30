@@ -22,6 +22,8 @@ try StikJIT.enableJIT(
 
 It blocks until done and throws `StikJITError` on failure. Pass `configuration:` to override the tunnel endpoint (defaults to `10.7.0.1:49152`). Pass `script:` to select the bundled JS used to drive the JIT-enabling exchange on devices with TXM — `.universal` (default) or `.legacy` based on your app's needs.
 
+[![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/StephenDev0/StikJIT)
+
 ## Build
 
 ```sh
