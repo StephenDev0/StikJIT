@@ -38,4 +38,25 @@ public enum StikJIT {
         let session = JITSession(pairingFilePath: pairingFile.path, configuration: configuration)
         try session.enableJIT(targetPID: targetPID, script: script, progress: progress)
     }
+
+    public static func isDDIMounted(pairingFile: URL,
+                                    configuration: Configuration = .default) throws -> Bool {
+        try DDISession(pairingFilePath: pairingFile.path, configuration: configuration).isMounted()
+    }
+
+    public static func downloadDDIIfNeeded(to paths: DDIPaths,
+                                           progress: @escaping (Double, String) -> Void = { _, _ in }) async throws {
+        try await DeveloperDiskImageService.shared.downloadIfNeeded(to: paths, progress: progress)
+    }
+
+    public static func mountDDI(pairingFile: URL,
+                                configuration: Configuration = .default,
+                                paths: DDIPaths,
+                                progress: @escaping (Double) -> Void = { _ in }) throws {
+        let session = DDISession(pairingFilePath: pairingFile.path, configuration: configuration)
+        try session.mountDDI(imagePath: paths.imagePath,
+                              trustcachePath: paths.trustcachePath,
+                              manifestPath: paths.manifestPath,
+                              progress: progress)
+    }
 }
