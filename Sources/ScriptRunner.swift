@@ -5,6 +5,8 @@ import JavaScriptCore
 final class ScriptRunner {
 
     private static let jitPageSize: UInt64 = 16384
+    private static let jitPageCommandLength = 19
+    private static let commandsPerBatch = 128
 
     private let targetPID: Int32
     private let debugProxy: OpaquePointer
@@ -67,17 +69,80 @@ final class ScriptRunner {
 
     private func prepareMemoryRegion(_ address: UInt64, length: UInt64) -> String? {
         guard length > 0 else { return "OK" }
-        let pageCount = (length - 1) / Self.jitPageSize + 1
-        for page in 0..<pageCount {
-            let pageAddress = address + page * Self.jitPageSize
+        let pageCount = Int((length - 1) / Self.jitPageSize + 1)
 
-            let response = sendCommand("M\(String(pageAddress, radix: 16)),1:69")
-            if let response, !(response.hasPrefix("OK") || response.isEmpty) {
-                progress("page bless failed @0x\(String(pageAddress, radix: 16)): \(response)")
+        let commandBuffer = Self.makeBlessCommands(startAddress: address, pageCount: pageCount)
+
+        for batchStart in stride(from: 0, to: pageCount, by: Self.commandsPerBatch) {
+            let commandsInBatch = min(Self.commandsPerBatch, pageCount - batchStart)
+            let byteOffset = batchStart * Self.jitPageCommandLength
+            let byteCount = commandsInBatch * Self.jitPageCommandLength
+
+            let sendError = commandBuffer.withUnsafeBytes { rawBuffer -> UnsafeMutablePointer<IdeviceFfiError>? in
+                let base = rawBuffer.bindMemory(to: UInt8.self).baseAddress!
+                return debug_proxy_send_raw(debugProxy, base.advanced(by: byteOffset), UInt(byteCount))
+            }
+            if let sendError {
+                progress("page bless batch failed @0x\(String(address, radix: 16)): \(IdeviceFFI.consume(sendError, fallback: "debug_proxy_send_raw").localizedDescription)")
                 return nil
             }
+
+            for _ in 0..<commandsInBatch {
+                var response: UnsafeMutablePointer<CChar>?
+                let readError = debug_proxy_read_response(debugProxy, &response)
+                if let response {
+                    idevice_string_free(response)
+                }
+                if let readError {
+                    progress("page bless batch failed @0x\(String(address, radix: 16)): \(IdeviceFFI.consume(readError, fallback: "debug_proxy_read_response").localizedDescription)")
+                    return nil
+                }
+            }
         }
+
         progress("Blessed \(pageCount) JIT page(s) at 0x\(String(address, radix: 16))")
         return "OK"
+    }
+
+    private static func makeBlessCommands(startAddress: UInt64, pageCount: Int) -> [UInt8] {
+        var buffer = [UInt8](repeating: 0, count: pageCount * jitPageCommandLength)
+
+        for page in 0..<pageCount {
+            let pageAddress = startAddress + UInt64(page) * jitPageSize
+            let start = page * jitPageCommandLength
+
+            buffer[start + 0] = UInt8(ascii: "$")
+            buffer[start + 1] = UInt8(ascii: "M")
+            writeHexAddress(pageAddress, into: &buffer, at: start + 2)
+            buffer[start + 11] = UInt8(ascii: ",")
+            buffer[start + 12] = UInt8(ascii: "1")
+            buffer[start + 13] = UInt8(ascii: ":")
+            buffer[start + 14] = UInt8(ascii: "6")
+            buffer[start + 15] = UInt8(ascii: "9")
+            buffer[start + 16] = UInt8(ascii: "#")
+            writeChecksum(into: &buffer, bodyStart: start + 1, hashIndex: start + 16)
+        }
+
+        return buffer
+    }
+
+    private static func writeHexAddress(_ address: UInt64, into buffer: inout [UInt8], at index: Int) {
+        for nibble in 0..<9 {
+            let shift = UInt64((8 - nibble) * 4)
+            buffer[index + nibble] = hexDigit(UInt8((address >> shift) & 0xf))
+        }
+    }
+
+    private static func writeChecksum(into buffer: inout [UInt8], bodyStart: Int, hashIndex: Int) {
+        var checksum: UInt8 = 0
+        for index in bodyStart..<hashIndex {
+            checksum &+= buffer[index]
+        }
+        buffer[hashIndex + 1] = hexDigit((checksum & 0xf0) >> 4)
+        buffer[hashIndex + 2] = hexDigit(checksum & 0x0f)
+    }
+
+    private static func hexDigit(_ value: UInt8) -> UInt8 {
+        value < 10 ? value + UInt8(ascii: "0") : value - 10 + UInt8(ascii: "a")
     }
 }
