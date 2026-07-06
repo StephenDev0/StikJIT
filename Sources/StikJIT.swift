@@ -44,6 +44,7 @@ public enum StikJIT {
         try DDISession(pairingFilePath: pairingFile.path, configuration: configuration).isMounted()
     }
 
+    @available(iOS 17.4, *)
     public static func downloadDDIIfNeeded(to paths: DDIPaths,
                                            progress: @escaping (Double, String) -> Void = { _, _ in }) async throws {
         try await DeveloperDiskImageService.shared.downloadIfNeeded(to: paths, progress: progress)
