@@ -10,6 +10,10 @@ public enum StikJITError: Error, LocalizedError {
 
     case device(code: Int32, subCode: Int32, message: String)
 
+    case ddiDownload(String)
+
+    case ddiFilesMissing(String)
+
     public var errorDescription: String? {
         switch self {
         case .pairingFile(let detail):
@@ -20,6 +24,10 @@ public enum StikJITError: Error, LocalizedError {
             return "Failed to establish a debugserver connection to the target process."
         case .device(let code, let subCode, let message):
             return "\(message) (idevice code \(code)/\(subCode))."
+        case .ddiDownload(let detail):
+            return "Failed to download Developer Disk Image: \(detail)."
+        case .ddiFilesMissing(let detail):
+            return "Developer Disk Image files missing: \(detail)."
         }
     }
 }
