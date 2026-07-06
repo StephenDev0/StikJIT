@@ -29,6 +29,7 @@ public struct DDIPaths: Sendable {
     }
 }
 
+@available(iOS 17.4, *)
 public actor DeveloperDiskImageService {
 
     public static let shared = DeveloperDiskImageService()
