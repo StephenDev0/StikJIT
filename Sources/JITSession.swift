@@ -29,7 +29,11 @@ final class JITSession {
         self.configuration = configuration
     }
 
-    func enableJIT(targetPID: Int32, script: StikJIT.Script, progress: @escaping (String) -> Void) throws {
+    func enableJIT(targetPID: Int32,
+                   script: StikJIT.Script,
+                   forceScript: Bool,
+                   txmPresence: TXMPresence,
+                   progress: @escaping (String) -> Void) throws {
         let tunnel = try makeTunnel()
         defer { tunnel.free() }
 
@@ -42,15 +46,18 @@ final class JITSession {
         _ = try? sendCommand("QStartNoAckMode", over: debugProxy)
         debug_proxy_set_ack_mode(debugProxy, 0)
 
-        if ProcessInfo.processInfo.hasTXM {
+        switch (forceScript, txmPresence) {
+        case (true, _), (false, .present):
             try ScriptRunner(targetPID: targetPID, debugProxy: debugProxy, script: script, progress: progress).run()
-        } else {
+        case (false, .absent):
             try attachWithoutScript(targetPID: targetPID, debugProxy: debugProxy, progress: progress)
+        case (false, .unknown):
+            throw StikJITError.txmDetectionUnavailable
         }
     }
 
     private func attachWithoutScript(targetPID: Int32, debugProxy: OpaquePointer, progress: (String) -> Void) throws {
-        progress("Attaching to pid \(targetPID). This device has no TXM, so the attach alone enables JIT and the script is skipped.")
+        progress("Attaching to pid \(targetPID). TXM is not present, so the attach alone enables JIT and the script is skipped.")
         _ = try sendCommand("vAttach;\(String(targetPID, radix: 16))", over: debugProxy)
         _ = try? sendCommand("D", over: debugProxy)
         progress("JIT enabled (debugger attached and detached).")

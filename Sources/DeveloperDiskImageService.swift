@@ -21,18 +21,55 @@ public struct DDIPaths: Sendable {
             manifestPath: directory.appendingPathComponent("DDI/BuildManifest.plist").path)
     }
 
-    var allFilesExist: Bool {
+    var allFilesUsable: Bool {
         let fileManager = FileManager.default
-        return fileManager.fileExists(atPath: imagePath)
-            && fileManager.fileExists(atPath: trustcachePath)
-            && fileManager.fileExists(atPath: manifestPath)
+        return allPaths.allSatisfy { path in
+            guard fileManager.isReadableFile(atPath: path),
+                  let attributes = try? fileManager.attributesOfItem(atPath: path),
+                  attributes[.type] as? FileAttributeType == .typeRegular,
+                  let size = attributes[.size] as? NSNumber else {
+                return false
+            }
+            return size.int64Value > 0
+        }
+    }
+
+    var allPaths: [String] {
+        [imagePath, trustcachePath, manifestPath]
+    }
+
+    func removeCachedFiles() throws {
+        let fileManager = FileManager.default
+        for path in Set(allPaths) where fileManager.fileExists(atPath: path) {
+            try fileManager.removeItem(atPath: path)
+        }
+    }
+}
+
+struct DDIDownloadItem {
+    let name: String
+    let destinationPath: String
+    let url: URL
+}
+
+enum DDIDownloadCatalog {
+    private static let baseURL = URL(string: "https://github.com/doronz88/DeveloperDiskImage/raw/refs/heads/main/PersonalizedImages/Xcode_iOS_DDI_Personalized")!
+
+    static func items(for paths: DDIPaths) -> [DDIDownloadItem] {
+        [
+            DDIDownloadItem(name: "BuildManifest.plist", destinationPath: paths.manifestPath, url: baseURL.appendingPathComponent("BuildManifest.plist")),
+            DDIDownloadItem(name: "Image.dmg", destinationPath: paths.imagePath, url: baseURL.appendingPathComponent("Image.dmg")),
+            DDIDownloadItem(name: "Image.dmg.trustcache", destinationPath: paths.trustcachePath, url: baseURL.appendingPathComponent("Image.dmg.trustcache")),
+        ]
     }
 }
 
 @available(iOS 17.4, *)
 public actor DeveloperDiskImageService {
 
-    public static let shared = DeveloperDiskImageService()
+    private static let sharedInstance = DeveloperDiskImageService()
+
+    public static var shared: DeveloperDiskImageService { sharedInstance }
 
     private let session: URLSession
 
@@ -40,45 +77,29 @@ public actor DeveloperDiskImageService {
         self.session = session
     }
 
-    private struct DownloadItem {
-        let name: String
-        let destinationPath: String
-        let urlString: String
-    }
-
-    private static let baseURL = "https://github.com/doronz88/DeveloperDiskImage/raw/refs/heads/main/PersonalizedImages/Xcode_iOS_DDI_Personalized"
-
     public func downloadIfNeeded(to paths: DDIPaths, progress: @escaping (Double, String) -> Void = { _, _ in }) async throws {
-        guard !paths.allFilesExist else { return }
+        guard !paths.allFilesUsable else { return }
         try await download(to: paths, progress: progress)
     }
 
     public func download(to paths: DDIPaths, progress: @escaping (Double, String) -> Void = { _, _ in }) async throws {
-        let items = [
-            DownloadItem(name: "BuildManifest.plist", destinationPath: paths.manifestPath, urlString: "\(Self.baseURL)/BuildManifest.plist"),
-            DownloadItem(name: "Image.dmg", destinationPath: paths.imagePath, urlString: "\(Self.baseURL)/Image.dmg"),
-            DownloadItem(name: "Image.dmg.trustcache", destinationPath: paths.trustcachePath, urlString: "\(Self.baseURL)/Image.dmg.trustcache"),
-        ]
+        let items = DDIDownloadCatalog.items(for: paths)
 
         let total = Double(items.count)
         for (index, item) in items.enumerated() {
             progress(Double(index) / total, "Downloading \(item.name)...")
-            try await downloadFile(from: item.urlString, to: URL(fileURLWithPath: item.destinationPath))
+            try await downloadFile(from: item.url, to: URL(fileURLWithPath: item.destinationPath))
             progress(Double(index + 1) / total, "\(item.name) ready")
         }
     }
 
-    private func downloadFile(from urlString: String, to destinationURL: URL) async throws {
-        guard let url = URL(string: urlString), url.scheme?.lowercased() == "https" else {
-            throw StikJITError.ddiDownload("invalid URL \(urlString)")
-        }
-
+    private func downloadFile(from url: URL, to destinationURL: URL) async throws {
         let (temporaryURL, response) = try await session.download(from: url)
         guard let httpResponse = response as? HTTPURLResponse else {
-            throw StikJITError.ddiDownload("invalid response for \(urlString)")
+            throw StikJITError.ddiDownload("invalid response for \(url.absoluteString)")
         }
         guard (200..<300).contains(httpResponse.statusCode) else {
-            throw StikJITError.ddiDownload("HTTP \(httpResponse.statusCode) for \(urlString)")
+            throw StikJITError.ddiDownload("HTTP \(httpResponse.statusCode) for \(url.absoluteString)")
         }
 
         let fileManager = FileManager.default

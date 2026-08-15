@@ -14,6 +14,16 @@ public enum StikJITError: Error, LocalizedError {
 
     case ddiFilesMissing(String)
 
+    case ddiNotMounted
+
+    case deviceNotReady(String)
+
+    case txmDetectionUnavailable
+
+    case customScript(String)
+
+    case scriptExecution(String)
+
     public var errorDescription: String? {
         switch self {
         case .pairingFile(let detail):
@@ -28,6 +38,16 @@ public enum StikJITError: Error, LocalizedError {
             return "Failed to download Developer Disk Image: \(detail)."
         case .ddiFilesMissing(let detail):
             return "Developer Disk Image files missing: \(detail)."
+        case .ddiNotMounted:
+            return "The Developer Disk Image was not mounted after the mount operation completed."
+        case .deviceNotReady(let detail):
+            return "The device is not ready for JIT: \(detail)"
+        case .txmDetectionUnavailable:
+            return "Whether TXM is present could not be determined. Enable forced script execution to bypass this check."
+        case .customScript(let detail):
+            return "Custom JIT script error: \(detail)."
+        case .scriptExecution(let detail):
+            return "JIT script failed: \(detail)."
         }
     }
 }

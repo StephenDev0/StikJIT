@@ -8,8 +8,8 @@ options:
 settings:
   base:
     SWIFT_VERSION: "5.0"
-    MARKETING_VERSION: "1.0.0"
-    CURRENT_PROJECT_VERSION: "1"
+    MARKETING_VERSION: "1.5.0"
+    CURRENT_PROJECT_VERSION: "6"
     CLANG_CXX_LIBRARY: "libc++"
 
 targets:
@@ -26,6 +26,7 @@ targets:
       - sdk: Security.framework
       - sdk: CFNetwork.framework
       - sdk: SystemConfiguration.framework
+      - sdk: IOKit.framework
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.stik.StikJIT
@@ -35,8 +36,8 @@ targets:
         SKIP_INSTALL: NO
         # idevice FFI: modulemap/headers to compile `import idevice`, and force_load the
         # static lib so all its symbols are embedded in the framework binary (self-contained).
-        SWIFT_INCLUDE_PATHS: "$(SRCROOT)/idevice"
-        HEADER_SEARCH_PATHS: "$(SRCROOT)/idevice"
+        SWIFT_INCLUDE_PATHS: "$(SRCROOT)/idevice $(SRCROOT)/iokit"
+        HEADER_SEARCH_PATHS: "$(SRCROOT)/idevice $(SRCROOT)/iokit"
         LIBRARY_SEARCH_PATHS: "$(SRCROOT)/idevice"
         OTHER_LDFLAGS: "-force_load $(SRCROOT)/idevice/libidevice_ffi.a"
 

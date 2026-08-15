@@ -13,6 +13,7 @@ final class ScriptRunner {
     private let script: StikJIT.Script
     private let progress: (String) -> Void
     private var context: JSContext?
+    private var executionError: StikJITError?
 
     init(targetPID: Int32, debugProxy: OpaquePointer, script: StikJIT.Script, progress: @escaping (String) -> Void) {
         self.targetPID = targetPID
@@ -28,7 +29,8 @@ final class ScriptRunner {
         self.context = context
 
         context.exceptionHandler = { [weak self] _, value in
-            self?.progress("JS exception: \(value?.toString() ?? "<unknown>")")
+            let detail = value?.toString() ?? "unknown JavaScript exception"
+            self?.recordExecutionError(.scriptExecution(detail))
         }
 
         let getPID: @convention(block) () -> Int = { [targetPID] in Int(targetPID) }
@@ -38,7 +40,7 @@ final class ScriptRunner {
         }
         let prepare: @convention(block) (Double, Double) -> String = { [weak self] address, length in
             guard let self else { return "" }
-            return self.prepareMemoryRegion(UInt64(address), length: UInt64(length)) ?? "OK"
+            return self.prepareMemoryRegion(UInt64(address), length: UInt64(length)) ?? ""
         }
         let log: @convention(block) (JSValue?) -> Void = { [weak self] value in
             self?.progress(value?.toString() ?? "")
@@ -49,8 +51,9 @@ final class ScriptRunner {
         context.setObject(prepare, forKeyedSubscript: "prepare_memory_region" as NSString)
         context.setObject(log,     forKeyedSubscript: "log" as NSString)
 
-        progress("Running \(script.resourceName).js against pid \(targetPID)…")
+        progress("Running \(script.name) against pid \(targetPID)…")
         context.evaluateScript(source)
+        if let executionError { throw executionError }
         progress("JIT script finished (region blessed, detached).")
     }
 
@@ -59,7 +62,7 @@ final class ScriptRunner {
         defer { debugserver_command_free(handle) }
         var response: UnsafeMutablePointer<CChar>?
         if let error = debug_proxy_send_command(debugProxy, handle, &response) {
-            progress("send_command error: \(IdeviceFFI.consume(error, fallback: "send_command").localizedDescription)")
+            recordExecutionError(IdeviceFFI.consume(error, fallback: "send_command"))
             return nil
         }
         guard let response else { return "" }
@@ -83,7 +86,7 @@ final class ScriptRunner {
                 return debug_proxy_send_raw(debugProxy, base.advanced(by: byteOffset), UInt(byteCount))
             }
             if let sendError {
-                progress("page bless batch failed @0x\(String(address, radix: 16)): \(IdeviceFFI.consume(sendError, fallback: "debug_proxy_send_raw").localizedDescription)")
+                recordExecutionError(IdeviceFFI.consume(sendError, fallback: "debug_proxy_send_raw"))
                 return nil
             }
 
@@ -94,7 +97,7 @@ final class ScriptRunner {
                     idevice_string_free(response)
                 }
                 if let readError {
-                    progress("page bless batch failed @0x\(String(address, radix: 16)): \(IdeviceFFI.consume(readError, fallback: "debug_proxy_read_response").localizedDescription)")
+                    recordExecutionError(IdeviceFFI.consume(readError, fallback: "debug_proxy_read_response"))
                     return nil
                 }
             }
@@ -102,6 +105,13 @@ final class ScriptRunner {
 
         progress("Blessed \(pageCount) JIT page(s) at 0x\(String(address, radix: 16))")
         return "OK"
+    }
+
+    private func recordExecutionError(_ error: StikJITError) {
+        if executionError == nil {
+            executionError = error
+            progress(error.localizedDescription)
+        }
     }
 
     private static func makeBlessCommands(startAddress: UInt64, pageCount: Int) -> [UInt8] {

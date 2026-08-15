@@ -1,0 +1,4 @@
+module StikJITIOKit [system] {
+  header "StikJITIOKit.h"
+  export *
+}

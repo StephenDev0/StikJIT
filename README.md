@@ -6,41 +6,67 @@ JIT cannot be enabled in-process, since a process that attaches a debugger to it
 
 ## Use
 
+For a complete host-app and helper-extension setup, see the [integration guide](INTEGRATION.md).
+
 Because it needs a separate process, you call StikJIT from a small app extension that your app launches and hands the target app's PID to (for example over XPC). StikJIT does not include that extension, its launch, or the pairing file; your app provides those.
 
 The device needs LocalDevVPN connected, and either Wi-Fi or Airplane Mode enabled, before JIT can be enabled or the DDI can be mounted.
 
-Add `StikJIT.xcframework` to the extension (Embed & Sign), then call it off the main thread:
+Add `StikJIT.xcframework` to the extension (Embed & Sign). StikJIT's preparation and JIT APIs are synchronous and blocking, so call them off the main thread.
 
-```swift
-import StikJIT
-
-try StikJIT.enableJIT(
-    targetPID: hostPID,             // process to enable JIT for
-    pairingFile: pairingFileURL,    // device pairing file
-    progress: { print("[StikJIT] \($0)") }
-)
-```
-
-It blocks until done and throws `StikJITError` on failure. Pass `configuration:` to override the tunnel endpoint (defaults to `10.7.0.1:49152`). Pass `script:` to select the bundled JS used to drive the JIT-enabling exchange on devices with TXM — `.universal` (default) or `.legacy` based on your app's needs.
-
-### Developer Disk Image
-
-The device must have the personalized Developer Disk Image (DDI) mounted before JIT can be enabled — `enableJIT` will fail otherwise. A mount persists until the device reboots, so it only needs to be (re)done once per boot, not on every launch. Mounting has no dependency on the extension process, so it can be done from anywhere in your app (e.g. on launch or in the background) rather than from the same extension that calls `enableJIT`:
+Choose the JIT script in your integration code. By default StikJIT runs it when TXM is present and uses attach-only JIT when TXM is absent. `forceScript` bypasses TXM detection and runs the selected script regardless:
 
 ```swift
 import StikJIT
 
 let paths = DDIPaths.default(in: documentsDirectory)
 
-if try !StikJIT.isDDIMounted(pairingFile: pairingFileURL) {
-    try await StikJIT.downloadDDIIfNeeded(to: paths) { fraction, status in
-        print("[DDI] \(status) (\(Int(fraction * 100))%)")
-    }
-    try StikJIT.mountDDI(pairingFile: pairingFileURL, paths: paths) { fraction in
-        print("[DDI] mounting \(Int(fraction * 100))%")
-    }
+try StikJIT.enableJIT(
+    targetPID: hostPID,
+    pairingFile: pairingFileURL,
+    ddiPaths: paths,
+    script: .universal,
+    forceScript: forceJITScript,
+    progress: { print("[StikJIT] \($0)") }
+)
+```
+
+The developer-selected script can be `.universal`, `.legacy`, or `.custom(fileURL)`. A custom script must be readable from the extension process. Script selection should not be exposed as a user setting; a user-facing toggle maps only to `forceScript`.
+
+`enableJIT` prepares the device before attaching. It probes the tunnel endpoint, checks whether the DDI is mounted, downloads missing DDI files, mounts and verifies the DDI, determines whether TXM is present, and then enables JIT. These steps run serially in that order. Pass `configuration:` to override the tunnel endpoint and five-second connection timeout; the endpoint defaults to `10.7.0.1:49152`.
+
+### Developer Disk Image
+
+The device must have the personalized Developer Disk Image (DDI) mounted before JIT can be enabled. A mount persists until the device reboots, so it only needs to be redone once per boot. Apps can prepare it from settings before launching an extension:
+
+```swift
+import StikJIT
+
+let paths = DDIPaths.default(in: documentsDirectory)
+
+let readiness = StikJIT.prepareDevice(
+    pairingFile: pairingFileURL,
+    paths: paths
+) { stage in
+    print("[Preparation] \(stage)")
 }
+
+switch readiness {
+case .ready(let securityState):
+    print("Ready; TXM present: \(String(describing: securityState.isTXMPresent))")
+case .unreachable(let reason):
+    print("Device unreachable: \(reason)")
+case .preparationFailed(let reason):
+    print("Preparation failed: \(reason)")
+}
+```
+
+TXM presence is also available without preparing the device through `StikJIT.isTXMPresent`. It returns `true` when TXM is present, `false` when it is absent, and `nil` when detection is unavailable.
+
+StikJIT treats readable, nonempty DDI files as cached and lets the device image mounter decide whether they are usable. A settings recovery action labeled **Reset Developer Disk Image** can remove the three cached files so the next preparation that needs to mount the DDI downloads them again:
+
+```swift
+try StikJIT.resetCachedDDI(at: paths)
 ```
 
 [![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/StephenDev0/StikJIT)
