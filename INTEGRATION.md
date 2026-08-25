@@ -9,7 +9,7 @@ This guide separates two different jobs:
 - **Part 1: Add iOS 26 JIT support** changes the app's JIT memory allocator so it can cooperate with a script where TXM/SPTM is present.
 - **Part 2: Integrate StikDebug and StikJIT** adds the StikDebug URL scheme and optional Built-in StikJIT to an app that already works with iOS 26 JIT and manual StikDebug activation.
 
-If the app already enables JIT successfully after the user manually selects it and its script in StikDebug, skip Part 1. Record the script filename and complete Part 2. Part 2 does not require changing a working JIT allocator.
+If the app already enables JIT successfully after the user manually selects it and its script in StikDebug, skip Part 1. Record whether it uses `universal.js`, `legacy.js`, or a custom script file, then complete Part 2. Part 2 does not require changing a working JIT allocator.
 
 If the app does not already have script-based iOS 26 JIT, complete Part 1 first and then Part 2.
 
@@ -56,11 +56,9 @@ Use this order where TXM/SPTM is present:
 
 Preallocate executable regions before detaching. A region introduced later cannot be prepared by a script that has already detached; reconnect and repeat the protocol if the engine must add one.
 
-## Keep the legacy protocol only for backward compatibility
+> **Note:** We keep legacy script support only for backward compatibility with existing applications. If you are adding JIT support to an app now, use the universal script.
 
-The legacy script is retained only for existing engines that stop once at `brk #0x69` with the RX address in `x0` and its length in `x1`. It prepares that region, advances the program counter, and detaches. Do not build new integrations around `legacy.js`; implement the universal protocol instead.
-
-After Part 1 works with the matching script in StikDebug, continue with Part 2. The chosen script filename is developer-controlled and must not become a user setting.
+After Part 1 works with the matching script in StikDebug, continue with Part 2. The chosen script is developer-controlled and must not become a user setting.
 
 # Part 2: Integrate StikDebug and StikJIT into an existing iOS 26 JIT app
 
@@ -69,7 +67,9 @@ Part 2 assumes all of the following already work:
 - The app can wait for an external debugger and detect when JIT is ready.
 - The app's JIT allocator implements its iOS 26 breakpoint and executable-region protocol.
 - JIT works when the developer or user manually selects the app and matching script in StikDebug.
-- The developer knows which script filename the app requires, normally `universal.js`.
+- The developer knows whether the app requires `universal.js`, `legacy.js`, or a custom script file.
+
+If the app currently uses `legacy.js`, we recommend switching it to the universal method, but this is not required to complete Part 2.
 
 Part 2 preserves that existing **Wait for Debugger** path and adds automatic StikDebug URL launching and optional Built-in StikJIT. It does not change the app's JIT allocator or script protocol. If any prerequisite above is missing, complete Part 1 first.
 
@@ -211,13 +211,17 @@ let paths = DDIPaths.default(
 
 Use the same `DDIPaths` for preparation, JIT enablement, and cache reset. Do not validate cached DDI versions or contents yourself; StikJIT reuses readable, nonempty files and lets the image mounter decide whether they work.
 
+A successful DDI mount persists until the device reboots, so it normally needs to be mounted only once per boot.
+
 ## Built-in StikJIT: Call the APIs at the right time
 
 StikJIT's preparation and enablement APIs are synchronous and blocking. Run them on one dedicated serial background queue in the helper. Do not split their ordered work into concurrent operations or convert it to `Task`/`async` calls.
 
+Pass `configuration:` when the integration needs to override the tunnel endpoint or five-second connection timeout. The default endpoint is `10.7.0.1:49152`.
+
 ### When settings opens
 
-Use `StikJIT.isTXMPresent` to show `Present`, `Not Present`, or `Unknown`. This is informational; script selection still belongs to the developer.
+Use `StikJIT.isTXMPresent` to show `Present`, `Not Present`, or `Unknown`. This is informational; the app's single script remains developer-defined.
 
 ### When the user selects Prepare JIT
 
@@ -258,7 +262,7 @@ try StikJIT.enableJIT(
 )
 ```
 
-Use `.universal` for new integrations. Use `.legacy` only when preserving an existing `legacy.js` ABI, or `.custom(URL)` for another established protocol. Keep that selection in backend code and use the corresponding filename in the StikDebug URL. Do not expose script selection to the user. The user-facing `forceScript` toggle only bypasses TXM detection and runs the developer-selected script regardless.
+Configure exactly one script in backend code: `.universal` or `.legacy` for the corresponding bundled script, or `.custom(URL)` for another established protocol. A custom script must be readable from the helper-extension process. For StikDebug requests, send the built-in filename for universal or legacy, or send the base64-encoded contents of the custom script. Do not expose this configuration to the user. The user-facing `forceScript` toggle only bypasses TXM detection and runs the configured script regardless.
 
 ### When the user resets the cache
 
@@ -282,7 +286,9 @@ Route all three choices through the same host-side coordinator. Check `get-task-
 
 For **Wait for Debugger**, keep the app's existing waiting and readiness behavior. Where TXM/SPTM is present, it must continue through the existing breakpoint protocol before reporting success; an ordinary debugger attachment without the correct script is not sufficient.
 
-For **StikDebug**, construct the URL with `URLComponents` and include the bundle ID, current PID, and the developer-selected script filename:
+For **StikDebug**, always construct the URL with the bundle ID and current PID. If TXM/SPTM is present, also send the app's JIT script. Each app must use exactly one developer-defined script; never add runtime script selection or expose it as a user setting. When TXM/SPTM is not present, omit the script parameter because debugger attachment alone enables JIT.
+
+This example is for an app that uses the recommended universal script:
 
 ```swift
 private let stikDebugScriptName = "universal.js"
@@ -298,8 +304,13 @@ components.host = "enable-jit"
 components.queryItems = [
     URLQueryItem(name: "bundle-id", value: bundleID),
     URLQueryItem(name: "pid", value: String(getpid())),
-    URLQueryItem(name: "script-name", value: stikDebugScriptName),
 ]
+
+if isTXMPresent {
+    components.queryItems?.append(
+        URLQueryItem(name: "script-name", value: stikDebugScriptName)
+    )
+}
 
 guard let url = components.url else {
     showJITError("Could not create the StikDebug request.")
@@ -309,7 +320,26 @@ guard let url = components.url else {
 UIApplication.shared.open(url)
 ```
 
-Use `universal.js` for new integrations. Specify `legacy.js` only for an app that already implements the legacy ABI, or another installed script for an established custom protocol. Keep this choice in developer-controlled backend code and do not expose `script-name` as a user setting. StikDebug uses the PID to target the running process and the bundle ID to identify and return to the app.
+An existing legacy app can use the same code with its fixed script name set to `legacy.js`. A custom-script app must remove `stikDebugScriptName` and replace the `if isTXMPresent` block with this fixed custom-script implementation:
+
+```swift
+if isTXMPresent {
+    do {
+        let scriptData = try Data(contentsOf: stikDebugScriptURL)
+        components.queryItems?.append(
+            URLQueryItem(
+                name: "script-data",
+                value: scriptData.base64EncodedString()
+            )
+        )
+    } catch {
+        showJITError("Could not read the StikDebug script: \(error.localizedDescription)")
+        return
+    }
+}
+```
+
+`stikDebugScriptURL` must identify the app's single custom script in developer-controlled backend code. Sending it through `script-data` means users do not need to install it in StikDebug. Resolve TXM/SPTM presence before building the request rather than treating an unknown result as absent. StikDebug uses the PID to target the running process and the bundle ID to identify and return to the app.
 
 If the app checks whether StikDebug is installed with `canOpenURL`, add this to its `Info.plist`:
 
@@ -373,19 +403,25 @@ Tell users all of the following before their first Built-in StikJIT attempt:
 
 Always surface the actual unreachable, download, mount, pairing, and script errors. Do not reduce every failure to “DDI unmounted.”
 
+## Request endorsement
+
+After completing Part 1, Part 2, or both, please get in touch with us in the [idevice Discord server](https://discord.gg/qtgv6QtYbV) or leave a GitHub issue/pull request, so we can endorse your project and offer support to your users. We review app submissions on a case-by-case basis and generally decline projects without an established user base, low-quality substantially AI-generated projects, and forks of apps that already have our endorsement.
+
 # Final checklist
 
 ## All methods
 
-- [ ] New iOS 26 integrations implement the universal protocol; legacy is used only for backward compatibility.
+- [ ] New iOS 26 integrations implement the universal protocol.
 - [ ] The host checks its own `get-task-allow` before starting JIT acquisition.
-- [ ] The selected script matches the app's breakpoint protocol and is not user-configurable.
+- [ ] The app has exactly one developer-configured script that matches its breakpoint protocol.
 - [ ] Where TXM/SPTM is present, executable-region preparation succeeds before the workload starts.
 - [ ] Settings offer one mutually exclusive JIT method selection and start only that method.
 
 ### StikDebug
 
-- [ ] The URL includes bundle ID, current PID, and the developer-selected `script-name`.
+- [ ] The URL always includes bundle ID and current PID.
+- [ ] Where TXM/SPTM is present, the URL includes `script-name` for universal or legacy, or base64-encoded `script-data` for a custom script.
+- [ ] Where TXM/SPTM is not present, the URL omits both script parameters.
 - [ ] `stikdebug` is in `LSApplicationQueriesSchemes` if the app calls `canOpenURL`.
 - [ ] The app does not treat successful URL opening as successful JIT acquisition.
 - [ ] Inside LiveContainer, the app tells users to enable **Use LiveContainer's Bundle ID**.
